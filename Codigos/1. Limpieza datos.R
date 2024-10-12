@@ -366,7 +366,8 @@ setwd(wd)
     table(n_train_hogares$Pobre)[2]/nrow(n_train_hogares) 
     
 #7.4. Exportar bases
-    setwd(paste0(wd,"/Datos/Out")) #Directorios
+    # setwd(paste0(wd,"/Datos/Out")) #Directorios
+    setwd(paste0(wd,"/Problem-Set-2_Machine-Learning_2024/Base"))
     
     #Hogares
     export(n_train_hogares, "train_hogares_final.rds") #train hogares
