@@ -56,5 +56,5 @@ ifelse(grepl("HP", getwd()), # Diego
                                           wd <- "",
                                           wd <- "otro_directorio"))))))
 
-getwd()
+
 
