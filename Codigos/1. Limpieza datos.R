@@ -389,6 +389,12 @@ db_miss<- db_miss %>% filter(n_missing!= 0)
 db_miss<- db_miss %>% mutate(p_missing= n_missing/Nobs) %>% arrange(-n_missing)
 db_miss 
    
+
+#7. 4 Cambios en variables de predicción 
+    n_train_hogares <- n_train_hogares %>% 
+    mutate(Pobre=factor(Pobre,levels=c(0,1),labels=c("No","Yes"))) #pobre como factor)
+
+
 #7.4. Exportar bases
     # setwd(paste0(wd,"/Datos/Out")) #Directorios
     setwd(paste0(wd,"\\Base"))
