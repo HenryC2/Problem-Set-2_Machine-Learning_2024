@@ -114,7 +114,6 @@ getwd()
     db_miss<- db_miss %>% mutate(p_missing= n_missing/Nobs) %>% arrange(-n_missing)
     db_miss  
   
-
   #4.3. Crear las potenciales variables de interes ----------------------------
       
     #Funcion parar crear las variables al mismo tiempo en la base de entrenamiento y de test
@@ -178,8 +177,11 @@ getwd()
             Bonificaciones = ifelse(P6580==1,1,0), #dummy de bonificaciones
             Bonificaciones = ifelse(is.na(Bonificaciones),0,Bonificaciones), #pone 0 en NA para bonificaciones
             rec_gub = ifelse(P7505==1,1,0), #Recibir dinero de otros hogares o entidades gubernamentales
+            rec_gub = ifelse(is.na(rec_gub),0,rec_gub),
             rec_hp_res = ifelse(P7510s1==1,1,0), #Recibir dinero de otros hogares o personas residentes en el pais
+            rec_hp_res = ifelse(is.na(rec_hp_res),0,rec_hp_res),
             rec_hp_nores = ifelse(P7510s2==1,1,0), #Recibir dinero de otros hogares o personas no residentes en el pais
+            rec_hp_nores = ifelse(is.na(rec_hp_nores),0,rec_hp_nores),
         
         #Auxilios o subsidios
         
@@ -188,9 +190,14 @@ getwd()
             Rec_subsidio_pais = ifelse(is.na(Rec_subsidio_pais),0,Rec_subsidio_pais),
             #Subsidios laborales
             sub_alim = ifelse(P6585s1==1,1,0), #Recibio auxilio o subsidio por alimentacion
+            sub_alim = ifelse(is.na(sub_alim),0,sub_alim),
             sub_transp = ifelse(P6585s2==1,1,0), #Recibio subsidio de transporte
+            sub_transp = ifelse(is.na(sub_transp),0,sub_transp),
             sub_famil = ifelse(P6585s3==1,1,0), #Recibio subsidio familiar
+            sub_famil = ifelse(is.na(sub_famil),0,sub_famil),
             sub_educ = ifelse(P6585s4==1,1,0), #Recibio subsidio educacion
+            sub_educ = ifelse(is.na(sub_educ),0,sub_educ),
+            
             #Horas trabajadas
             P6800 = ifelse(is.na(P6800),0,P6800), #Horas laborales
         
@@ -347,27 +354,41 @@ getwd()
           Pago_Arriendo = ifelse(is.na(pagm_arriendo),pagm_arriendo_est,pagm_arriendo), #si no paga arriendo pone el valor que pagaria
           Ln_Cuota = log(pagm_armort),#Log de pago de cuota
           Ln_Cuota = ifelse(is.na(Ln_Cuota),0,Ln_Cuota), #pone 0 en NA
-          Valor_Cu = ifelse(is.na(pagm_armort),0,pagm_armort), #pone 0 en NA (valor cuota)
-          #Ln_Est_arrien = log(P5130), #Log de pago de estimativo de pago de arriendo
+          Valor_Cuota = ifelse(is.na(pagm_armort),0,pagm_armort), #pone 0 en NA (valor cuota)
           Ln_Pago_arrien = log(Pago_Arriendo)) #Log de pago arriendo 
     }
     
     n_train_hogares <- pre_process_hogares(n_train_hogares)
     n_test_hogares <- pre_process_hogares(n_test_hogares)
     
-#7.2. Cambios en variables de prediccion 
-#    n_train_hogares <- n_train_hogares %>% 
-#      mutate(
-#        Pobre=factor(Pobre,levels=c(0,1),labels=c("No","Yes")),#pobre como factor
-#        Ln_Ing_tot_hogar = log(Ingtotug),
-#        Ln_Ing_tot_hogar_imp_arr = log(Ingtotugarr),
-#        Ln_Ing_tot_hogar_per_cap = log(Ingpcug))
-    
-    
-#7.3. Mirar la variable de pobre despues de armado la muestra
+#7.2. Mirar la variable de pobre despues de armado la muestra
     table(n_train_hogares$Pobre)
     table(n_train_hogares$Pobre)[2]/nrow(n_train_hogares) 
     
+  
+# Se eliminan de la base las variables pagm_arriendo, pagm_arriendo_est  y pagm_armort.
+# Para las dos primeras, la información ya esta considerando en la variable "Pago_Arriendo".
+# Para la ultima, ya se esta considerando la informacion en "Valor_Cuota"
+ 
+    Data_Final <- function(data,...){
+      data <- data %>% 
+        
+        #modificar variables
+        select(-pagm_arriendo,-pagm_arriendo_est,-pagm_armort)
+    }
+    
+    n_train_hogares <- Data_Final(n_train_hogares)
+    n_test_hogares <- Data_Final(n_test_hogares)
+    
+#7.3 Ultima verificacion de NAs
+    
+# Tabla parar mirar el porcentaje de missings
+db_miss <- skim(n_train_hogares)
+Nobs= nrow(n_train_hogares) 
+db_miss<- db_miss %>% filter(n_missing!= 0)
+db_miss<- db_miss %>% mutate(p_missing= n_missing/Nobs) %>% arrange(-n_missing)
+db_miss 
+   
 #7.4. Exportar bases
     # setwd(paste0(wd,"/Datos/Out")) #Directorios
     setwd(paste0(wd,"\\Base"))
