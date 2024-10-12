@@ -80,7 +80,7 @@ getwd()
 #------------------------------------------------------------------------------
 # 4. Tramiento de la base de personas -----------------------------------------
 #------------------------------------------------------------------------------
-      
+     
 #4.1  Dejar las variables que comparta la base de train y test ---------------
   train_personas <- train_personas[,c(colnames(test_personas))]
   
@@ -147,6 +147,8 @@ getwd()
             incapacitado = ifelse(P6240==5,1,0),
             #Reemplazar 9 con ceros (no sabe, no responde)
             EducLevel = ifelse(P6210==9,0,P6210), #Replace 9 with 0
+            EducLevel = ifelse(is.na(EducLevel),0,EducLevel),
+          
             #Experiencia laboral
             exper_ult_trab = ifelse(is.na(P6426),0,P6426),
         
@@ -212,7 +214,7 @@ getwd()
         names(train_personas)
       test_personas <- pre_process_personas(test_personas)
         names(test_personas)
-    
+
     
   #4.4 Agregar base a nivel de hogar -----------------------------------------
 
@@ -284,15 +286,15 @@ getwd()
         test_personas_hogar <- left_join(test_personas_hogar,personas_jefe_hogar(test_personas),by = "id")
           names(train_personas_hogar)
           
-          
+     
 #------------------------------------------------------------------------------#
 # 5.                     PROCESAR BASES DE HOGARES
 #------------------------------------------------------------------------------#
     
           
-  #5.1. Dejar las variables que se encuentas en ambas bases---------------------
+  #5.1. Dejar las variables que se encuentran en ambas bases---------------------
           
-    train_hogares <- train_hogares[,c(colnames(test_hogares),"Pobre","Ingtotug","Ingtotugarr","Ingpcug")]
+    train_hogares <- train_hogares[,c(colnames(test_hogares),"Pobre")]
     names(train_hogares) #Mirar las variables que quedaron
     
   #5.2. Renombras y crear nuevas variables -------------------------------------
@@ -353,14 +355,13 @@ getwd()
     n_train_hogares <- pre_process_hogares(n_train_hogares)
     n_test_hogares <- pre_process_hogares(n_test_hogares)
     
-
 #7.2. Cambios en variables de prediccion 
-    n_train_hogares <- n_train_hogares %>% 
-      mutate(
-        Pobre=factor(Pobre,levels=c(0,1),labels=c("No","Yes")),#pobre como factor
-        Ln_Ing_tot_hogar = log(Ingtotug),
-        Ln_Ing_tot_hogar_imp_arr = log(Ingtotugarr),
-        Ln_Ing_tot_hogar_per_cap = log(Ingpcug))
+#    n_train_hogares <- n_train_hogares %>% 
+#      mutate(
+#        Pobre=factor(Pobre,levels=c(0,1),labels=c("No","Yes")),#pobre como factor
+#        Ln_Ing_tot_hogar = log(Ingtotug),
+#        Ln_Ing_tot_hogar_imp_arr = log(Ingtotugarr),
+#        Ln_Ing_tot_hogar_per_cap = log(Ingpcug))
     
     
 #7.3. Mirar la variable de pobre despues de armado la muestra
@@ -375,7 +376,5 @@ getwd()
     export(n_train_hogares, "Train_hogares_final.rds") #train hogares
     export(n_test_hogares, "Test_hogares_final.rds") #test hogares
     
-  
-    
-    db_miss <- skim(n_train_hogares)
+
     
