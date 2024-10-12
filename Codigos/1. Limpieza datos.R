@@ -1,15 +1,17 @@
 #------------------------------------------------------------------------------#
-#---------------- Script 1. LIMPIEZA DE LAS BASES DE DATOS     ----------------#
+#---------------- Script 1. LIMPIEZA DE LAS BASES DE DATOS  -------------------#
 #------------------------------------------------------------------------------#
 
 #-------------------------------------------------------------------------------
 # 1. Cargar base de datos de entrenamiento y testeo ----------------------------
 #-------------------------------------------------------------------------------
 
-# wd <-  "C:/Users/Usuario/OneDrive - Universidad de los andes/Escritorio/Taller 2 Big data"
-# setwd(paste0(wd,"/Datos/Originales")) #DirectorioS
-# getwd()
-setwd(paste0(wd,"\\Base\\Base_Original"))
+# Julieth 
+setwd("C:/Users/Usuario/OneDrive - Universidad de los andes/Escritorio/Taller 2 Big data/Datos/Originales") #DirectorioS  # Julieth 
+
+# Diego 
+setwd("C:\\Users\\HP\\OneDrive - Universidad Nacional de Colombia\\Documentos\\Diego\\PEG\\2024-2\\Machine learning\\Problem Sets\\Problem_Set_2")  # Diego 
+getwd()
 
   ### Bases de datos de entrenamiento
     
@@ -148,7 +150,7 @@ setwd(paste0(wd,"\\Base\\Base_Original"))
             #Experiencia laboral
             exper_ult_trab = ifelse(is.na(P6426),0,P6426),
         
-          #Variables de cotizacion y regimen
+          # Variables de cotizacion y regimen
           
             #Dummy afiliacion al SS
             Afiliado_SS = ifelse(P6090== 1, 1, 0), #Afiliado a seg social en salud
@@ -367,7 +369,7 @@ setwd(paste0(wd,"\\Base\\Base_Original"))
     
 #7.4. Exportar bases
     # setwd(paste0(wd,"/Datos/Out")) #Directorios
-    setwd(paste0(wd,"\\Base\\Base_Ajustada"))
+    setwd(paste0(wd,"\\Base"))
     
     #Hogares
     export(n_train_hogares, "Train_hogares_final.rds") #train hogares
@@ -375,5 +377,5 @@ setwd(paste0(wd,"\\Base\\Base_Original"))
     
   
     
-    
+    db_miss <- skim(n_train_hogares)
     
