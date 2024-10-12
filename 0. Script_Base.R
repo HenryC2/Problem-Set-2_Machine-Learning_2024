@@ -4,41 +4,40 @@
 
 # El presente codigo permite:
 # 1: Cambiar el directorio entre cada uno de los colaboradores del proyecto
-# 2: Correr cada uno de los scripts utilizados en la resoluci?n del problem set 1.
+# 2: Correr cada uno de los scripts utilizados en la resolucion del Problem set 2.
 
 # 0. Se borra la memoria y se cargan los paquetes ------------------------------
 rm(list = ls())   # Borra la memoria
 
-# Se cargan los paquetes de inter?s
+# Se cargan los paquetes de interes
 library(pacman)
-p_load(rio, # importación/exportación de datos
+p_load(rio,       # importacion/exportacion de datos
        tidyverse, # datos ordenados (ggplot y Tidyverse)
-       skimr, # datos de resumen
-       visdat, # visualización de datos faltantes
-       corrplot, # gráficos de correlación
+       skimr,     # datos de resumen
+       visdat,    # visualizacion de datos faltantes
+       corrplot,  # graficos de correlacion
        stargazer, # tablas/salida a TEX.
-       rvest, # web-scraping
-       readr, # importar CSV
-       writexl, # exportar Excel
-       boot, # bootstrapping
-       ggpubr, # extensiones de ggplot2
-       WVPlots, # gráficos de variables ponderadas
-       patchwork, # para combinar gráficos
-       gridExtra, # para combinar gráficos
-       ggplot2, # gráficos
-       caret, # para evaluación de modelos predictivos
-       data.table,# para manipulación de datos
+       rvest,     # web-scraping
+       readr,     # importar CSV
+       writexl,   # exportar Excel
+       boot,      # bootstrapping
+       ggpubr,    # extensiones de ggplot2
+       WVPlots,   # graficos de variables ponderadas
+       patchwork, # para combinar graficos
+       gridExtra, # para combinar graficos
+       ggplot2,   # graficos
+       caret,     # para evaluacion de modelos predictivos
+       data.table,# para manipulacion de datos
        glmnet,
-       caret,
        smotefamily, #remuestreo SMOTE
        dplyr,
-       dummy, #crear dummys
-       Metrics, #evaluation metrics for ML
-       MLeval, #Machine Learning Model Evaluation
+       dummy,    # crear dummys
+       Metrics,  # evaluation metrics for ML
+       MLeval,   # Machine Learning Model Evaluation
        pROC,
-       ROSE, #remuestreo ROSE
-       ranger,#random forest
-       xgboost) #xgboosting
+       ROSE,     #remuestreo ROSE
+       ranger,   #random forest
+       xgboost)  #xgboosting
 
 
 # 1. Definicion del directorio -------------------------------------------------
@@ -57,5 +56,5 @@ ifelse(grepl("HP", getwd()), # Diego
                                           wd <- "",
                                           wd <- "otro_directorio"))))))
 
-getwd(wd) #Mirar directorio
+getwd() #Mirar directorio
 
