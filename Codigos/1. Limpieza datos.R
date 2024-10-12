@@ -9,7 +9,7 @@
 # wd <-  "C:/Users/Usuario/OneDrive - Universidad de los andes/Escritorio/Taller 2 Big data"
 # setwd(paste0(wd,"/Datos/Originales")) #DirectorioS
 # getwd()
-setwd(wd)
+setwd(paste0(wd,"\\Base\\Base_Original"))
 
   ### Bases de datos de entrenamiento
     
@@ -367,14 +367,13 @@ setwd(wd)
     
 #7.4. Exportar bases
     # setwd(paste0(wd,"/Datos/Out")) #Directorios
-    setwd(paste0(wd,"/Problem-Set-2_Machine-Learning_2024/Base"))
+    setwd(paste0(wd,"\\Base\\Base_Ajustada"))
     
     #Hogares
-    export(n_train_hogares, "train_hogares_final.rds") #train hogares
-    export(n_test_hogares, "test_hogares_final.rds") #test hogares
+    export(n_train_hogares, "Train_hogares_final.rds") #train hogares
+    export(n_test_hogares, "Test_hogares_final.rds") #test hogares
     
-
-    
+  
     
     
     
