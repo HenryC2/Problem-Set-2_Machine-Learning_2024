@@ -109,9 +109,8 @@ SMOTE_2 <- SMOTE(X = Predictores_2,target = Train_2$Pobre,K=10)
 Train_2_SMOTE <- SMOTE_2$data
 
 setwd(paste0(wd,"\\Base\\Base_Elastic_Net"))
-# export(Train_SMOTE, "Train_SMOTE.rds")
+#export(Train_2_SMOTE, "Train_2_SMOTE.rds")
 Train_SMOTE = import(file = "Train_2_SMOTE.rds")
-
 
 # 3. Se paraleliza -------------------------------------------------------------
 library(doParallel)
@@ -122,7 +121,7 @@ registerDoParallel(cl)
 
 # stopCluster(cl)    # Para liberar los nucleos 
 
-#3. Estimaciones ---------------------------------------------------------------
+#4. Estimaciones ---------------------------------------------------------------
 
 set.seed(098063)
 fiveStats <- function(...)  c(defaultSummary(...),  prSummary(...)) 
@@ -133,7 +132,7 @@ fitControl<- trainControl(method = "cv",
                     summaryFunction = fiveStats,
                     savePredictions = T)
 
-#3.1 Estimacion 1 -------------------------------------------------------------
+#4.1 Estimacion 1 -------------------------------------------------------------
 Regresores = c("hacinamiento","nocupados","ndesempleados","ntrabajo_menores","Head_Mujer","Pago_Arriendo")
 
 # Definicion del modelo 
@@ -163,4 +162,70 @@ Nombre <- paste0("EN_lambda_", "0.001", "_alpha_" , "0.8", ".csv")
 setwd(paste0(wd,"\\Output\\Elastic_Net"))
 write.csv(Prediccion_1,Nombre, row.names = FALSE)
 
+#4.2 Estimaciones contrastando directamente el F1-Score-------------------------
 
+# 4.2.1 Modelo 2
+Regresores_2 = c("hacinamiento","nocupados","ndesempleados","ntrabajo_menores","Head_Mujer","Pago_Arriendo")
+
+# Definicion del modelo 
+Modelo_2 <- train(formula(paste0("class ~", paste0(Regresores_2, collapse = " + "))),
+                  data=Train_2_SMOTE,
+                  metric = "F",
+                  method = "glmnet",
+                  trControl = fitControl,
+                  family="binomial",
+                  tuneGrid=expand.grid(
+                    alpha = seq(0,1,by=.10),
+                    lambda =10^seq(-1, -3, length = 10)
+                 ))
+
+# Prediccion fuera de muestra
+Prediccion_2 <- Test_2   %>% 
+  mutate(Pobre = predict(Modelo_2, newdata = Test_2, type = "raw")    ## predicted class labels
+  )  %>% select(Pobre)                 
+
+# F1-Score 
+f1_score_modelo_2 <- F1_Score(y_true = as.factor(Test_2$Pobre), y_pred = as.factor(Prediccion_2$Pobre), positive = "Yes")
+print(f1_score_modelo_2)
+# 0.4738
+
+#4.2.2 Modelo 3 ----------------------------------------------------------------
+Regresores_3 = c("hacinamiento","nocupados","ndesempleados","ntrabajo_menores","Head_Mujer","Pago_Arriendo","n_cuartos_duermen",
+                 "n_cuartos","Head_ocupado","Head_Afiliado_SS","Head_Cot_pension")
+
+# Definicion del modelo 
+Modelo_3 <- train(formula(paste0("class ~", paste0(Regresores_3, collapse = " + "))),
+                  data=Train_2_SMOTE,
+                  metric = "F",
+                  method = "glmnet",
+                  trControl = fitControl,
+                  family="binomial",
+                  tuneGrid=expand.grid(
+                    alpha = seq(0,1,by=.10),
+                    lambda =10^seq(-1, -3, length = 10)
+                  ))
+
+# Prediccion fuera de muestra
+Prediccion_3 <- Test_2   %>% 
+  mutate(Pobre = predict(Modelo_3, newdata = Test_2, type = "raw")    ## predicted class labels
+  )  %>% select(Pobre)                 
+
+# F1-Score 
+f1_score_modelo_3 <- F1_Score(y_true = as.factor(Test_2$Pobre), y_pred = as.factor(Prediccion_3$Pobre), positive = "Yes")
+print(f1_score_modelo_3)
+
+# Prediccion fuera de muestra
+Prediccion_3_1 <- Test   %>% 
+  mutate(Pobre = predict(Modelo_3, newdata = Test, type = "raw")    ## predicted class labels
+  )  %>% select(id,Pobre)
+
+# Se deja en el formato requerido
+Prediccion_3_1 <- Prediccion_3_1 %>% 
+  mutate(pobre=ifelse(Pobre=="Yes",1,0)) %>% 
+  select(id,pobre)
+
+Nombre <- paste0("EN_lambda_", "0.001", "_alpha_" , "1", ".csv") 
+setwd(paste0(wd,"\\Output\\Elastic_Net"))
+write.csv(Prediccion_3_1,Nombre, row.names = FALSE)
+
+                  
