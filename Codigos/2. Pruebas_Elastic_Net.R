@@ -9,20 +9,27 @@ Test <- import(file = "Test_hogares_final.rds")
 
 # 1. Filtro de variables -------------------------------------------------------
 
-Filtro_Variables =  function(data,...){
+Filtro_Variables_Train =  function(data,...){
   data <- data %>% 
     
   #modificar variables
   select(-id,-Li,-Lp,-Fex_c,-Fex_dpto,-Valor_Cuota,-Ln_Cuota,-Ln_Pago_arrien,-Departamento)
 }
 
-Train = Filtro_Variables(Train)
-Test = Filtro_Variables(Test)
+Filtro_Variables_Test =  function(data,...){
+  data <- data %>% 
+    
+    #modificar variables
+    select(-Li,-Lp,-Fex_c,-Fex_dpto,-Valor_Cuota,-Ln_Cuota,-Ln_Pago_arrien,-Departamento)
+}
+
+Train = Filtro_Variables_Train(Train)
+Test = Filtro_Variables_Test(Test)
 
 # 2. Re-balanceo ---------------------------------------------------------------
 
 table(Train$Pobre)
-cat("La tasa de pobrza es", Train%>%select(Pobre)%>% filter(Pobre==1)%>% nrow()/ nrow(Train)*100)
+cat("La tasa de pobrza es", Train%>%select(Pobre)%>% filter(Pobre=="Yes")%>% nrow()/ nrow(Train)*100,"%")
 
 # Debido a que la tasa de pobreza es 20,01%, se debe re balancear la muestra 
 # para mejorar el proceso de estimación. Para ello, se utilizará el método 
@@ -48,7 +55,7 @@ Dummys <- model.matrix(~ . - 1, data = Dummys)  # Eliminar el intercepto
 Train <- cbind(subset(Train, select = -c(Dominio,tipo_vivienda,maxEducLevel,Head_EducLevel,
                                                  Head_Oficio,Head_Ocupacion)),Dummys)
 
-# 2.1 Arreglos de las variales categoricas en base test -----------------------
+# 2.2 Arreglos de las variales categoricas en base test -----------------------
 
 Dummys <- subset(Test, select = c(Dominio,tipo_vivienda,maxEducLevel,Head_EducLevel,
                                    Head_Oficio,Head_Ocupacion))
@@ -67,8 +74,21 @@ Dummys <- model.matrix(~ . - 1, data = Dummys)  # Eliminar el intercepto
 Test <- cbind(subset(Test, select = -c(Dominio,tipo_vivienda,maxEducLevel,Head_EducLevel,
                                          Head_Oficio,Head_Ocupacion)),Dummys)
 
-# 2.2  Re balanceo con SMOTE  --------------------------------------------------
+# 2.3 Particion de muestra Train en Train_2 y Test_2. 
+# Esto se hace para poder evaluar mejores modelos fueras de muestra analizando
+# directamente el F1-score y llevar el mejor de todos a la plataforma. 
 
+set.seed(1536) # Para reproducibilidad
+
+Train_2_indices <- as.integer(createDataPartition(Train$Pobre, p = 0.85, list = FALSE))
+Train_2 <- Train[Train_2_indices, ]
+Test_2 <- Train[-Train_2_indices, ]
+prop.table(table(Train_2$Pobre))
+prop.table(table(Test_2$Pobre))
+
+# 2.4  Re balanceo con SMOTE  --------------------------------------------------
+
+# 2.4.1 Re balanceo usando el Train original 
 Predictores <- Train %>%
   select(-Pobre) %>%
   as.data.frame()  # Asegúrate de que sea un dataframe
@@ -80,66 +100,67 @@ setwd(paste0(wd,"\\Base\\Base_Elastic_Net"))
 # export(Train_SMOTE, "Train_SMOTE.rds")
 Train_SMOTE = import(file = "Train_SMOTE.rds")
 
-# 3. Division de la muestra de train: Entre train 2.0 y test  2.0 --------------
+# 2.4.2 Re balanceo usando el Train_2 
+Predictores_2 <- Train_2 %>%
+  select(-Pobre) %>%
+  as.data.frame()  # Asegúrate de que sea un dataframe
 
-set.seed(12345) # Para reproducibilidad
-train_indices <- as.integer(createDataPartition(Train_SMOTE$Pobre, p = 0.85, list = FALSE))
-train <- train_hogares[train_indices, ]
-test <- train_hogares[-train_indices, ]
-prop.table(table(train$Pobre))
-prop.table(table(test$Pobre))
+SMOTE_2 <- SMOTE(X = Predictores_2,target = Train_2$Pobre,K=10)
+Train_2_SMOTE <- SMOTE_2$data
 
+setwd(paste0(wd,"\\Base\\Base_Elastic_Net"))
+# export(Train_SMOTE, "Train_SMOTE.rds")
+Train_SMOTE = import(file = "Train_2_SMOTE.rds")
+
+
+# 3. Se paraleliza -------------------------------------------------------------
+library(doParallel)
+num_cores <- parallel::detectCores()
+print(num_cores)
+cl <- makeCluster(num_cores - 3)  # Usar todos menos 3
+registerDoParallel(cl)
+
+# stopCluster(cl)    # Para liberar los nucleos 
+
+#3. Estimaciones ---------------------------------------------------------------
 
 set.seed(098063)
-fiveStats <- function(...)  c(defaultSummary(...),  prSummary(...))  ## Para 
+fiveStats <- function(...)  c(defaultSummary(...),  prSummary(...)) 
 
-
-ctrl<- trainControl(method = "cv",
-                    number = 5,
+fitControl<- trainControl(method = "cv",
+                    number = 10,
                     classProbs = TRUE,
                     summaryFunction = fiveStats,
                     savePredictions = T)
 
+#3.1 Estimacion 1 -------------------------------------------------------------
+Regresores = c("hacinamiento","nocupados","ndesempleados","ntrabajo_menores","Head_Mujer","Pago_Arriendo")
 
-
-
-
-data=train,
-metric = "F",
-method = "glmnet",
-trControl = ctrl,
-family="binomial",
-tuneGrid=expand.grid(
-  alpha = seq(0,1,by=.5),
-  lambda =10^seq(-1, -3, length = 10)
+# Definicion del modelo 
+Modelo_1 <- train(formula(paste0("class ~", paste0(Regresores, collapse = " + "))),
+                  data=Train_SMOTE,
+                  metric = "F",
+                  method = "glmnet",
+                  trControl = fitControl,
+                  family="binomial",
+                  tuneGrid=expand.grid(
+                  alpha = seq(0,1,by=.10),
+                  lambda =10^seq(-1, -3, length = 10)
+                  )
 )
 
-set.seed(098063)
-fiveStats <- function(...)  c(defaultSummary(...),  prSummary(...))  ## Para 
+# Prediccion fuera de muestra
+Prediccion_1 <- Test   %>% 
+  mutate(Pobre = predict(Modelo_1, newdata = Test, type = "raw")    ## predicted class labels
+  )  %>% select(id,Pobre)
 
-
-ctrl<- trainControl(method = "cv",
-                    number = 5,
-                    classProbs = TRUE,
-                    summaryFunction = fiveStats,
-                    savePredictions = T))
-
-
-predictSample <- test   %>% 
-  mutate(pobre_lab = predict(model1, newdata = test, type = "raw")    ## predicted class labels
-  )  %>% select(id,pobre_lab)
-
-head(predictSample)
-
-predictSample<- predictSample %>% 
-  mutate(pobre=ifelse(pobre_lab=="Yes",1,0)) %>% 
+# Se deja en el formato requerido
+Prediccion_1 <- Prediccion_1 %>% 
+  mutate(pobre=ifelse(Pobre=="Yes",1,0)) %>% 
   select(id,pobre)
-head(predictSample)   
 
-
-
-name<- paste0("EN_lambda_", "00046", "_alpha_" , "05", ".csv") 
-
-write.csv(predictSample,name, row.names = FALSE)
+Nombre <- paste0("EN_lambda_", "0.001", "_alpha_" , "0.8", ".csv") 
+setwd(paste0(wd,"\\Output\\Elastic_Net"))
+write.csv(Prediccion_1,Nombre, row.names = FALSE)
 
 
