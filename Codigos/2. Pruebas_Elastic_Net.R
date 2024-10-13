@@ -76,11 +76,22 @@ Predictores <- Train %>%
 SMOTE <- SMOTE(X = Predictores,target = Train$Pobre,K=5)
 Train_SMOTE <- SMOTE$data
 
+setwd(paste0(wd,"\\Base\\Base_Elastic_Net"))
+# export(Train_SMOTE, "Train_SMOTE.rds")
+Train_SMOTE = import(file = "Train_SMOTE.rds")
+
+# 3. Division de la muestra de train: Entre train 2.0 y test  2.0 --------------
+
+set.seed(12345) # Para reproducibilidad
+train_indices <- as.integer(createDataPartition(Train_SMOTE$Pobre, p = 0.85, list = FALSE))
+train <- train_hogares[train_indices, ]
+test <- train_hogares[-train_indices, ]
+prop.table(table(train$Pobre))
+prop.table(table(test$Pobre))
 
 
-str(Train)
 
-#2. model1 <- train(Pobre~.,
+
 data=train,
 metric = "F",
 method = "glmnet",
