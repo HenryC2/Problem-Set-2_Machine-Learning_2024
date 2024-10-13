@@ -253,18 +253,4 @@ Prediccion_4 <- Test_2   %>%
 # F1-Score 
 f1_score_modelo_4 <- F1_Score(y_true = as.factor(Test_2$Pobre), y_pred = as.factor(Prediccion_4$Pobre), positive = "Yes")
 print(f1_score_modelo_4)
-# 0.5364376
-
-# Prediccion fuera de muestra
-Prediccion_3_1 <- Test   %>% 
-  mutate(Pobre = predict(Modelo_3, newdata = Test, type = "raw")    ## predicted class labels
-  )  %>% select(id,Pobre)
-
-# Se deja en el formato requerido
-Prediccion_3_1 <- Prediccion_3_1 %>% 
-  mutate(pobre=ifelse(Pobre=="Yes",1,0)) %>% 
-  select(id,pobre)
-
-Nombre <- paste0("EN_lambda_", "0.001", "_alpha_" , "1", ".csv") 
-setwd(paste0(wd,"\\Output\\Elastic_Net"))
-write.csv(Prediccion_3_1,Nombre, row.names = FALSE)                  
+# 0.5403
