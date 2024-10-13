@@ -90,6 +90,18 @@ prop.table(table(train$Pobre))
 prop.table(table(test$Pobre))
 
 
+set.seed(098063)
+fiveStats <- function(...)  c(defaultSummary(...),  prSummary(...))  ## Para 
+
+
+ctrl<- trainControl(method = "cv",
+                    number = 5,
+                    classProbs = TRUE,
+                    summaryFunction = fiveStats,
+                    savePredictions = T)
+
+
+
 
 
 data=train,
@@ -102,7 +114,15 @@ tuneGrid=expand.grid(
   lambda =10^seq(-1, -3, length = 10)
 )
 
-)
+set.seed(098063)
+fiveStats <- function(...)  c(defaultSummary(...),  prSummary(...))  ## Para 
+
+
+ctrl<- trainControl(method = "cv",
+                    number = 5,
+                    classProbs = TRUE,
+                    summaryFunction = fiveStats,
+                    savePredictions = T))
 
 
 predictSample <- test   %>% 
