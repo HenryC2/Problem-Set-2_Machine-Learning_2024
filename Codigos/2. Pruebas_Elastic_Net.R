@@ -213,6 +213,7 @@ Prediccion_3 <- Test_2   %>%
 # F1-Score 
 f1_score_modelo_3 <- F1_Score(y_true = as.factor(Test_2$Pobre), y_pred = as.factor(Prediccion_3$Pobre), positive = "Yes")
 print(f1_score_modelo_3)
+# 0.5364376
 
 # Prediccion fuera de muestra
 Prediccion_3_1 <- Test   %>% 
