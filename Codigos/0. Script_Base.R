@@ -46,8 +46,8 @@ ifelse(grepl("HP", getwd()), # Diego
        wd <- "C:\\Users\\HP\\OneDrive - Universidad Nacional de Colombia\\Documentos\\Diego\\PEG\\2024-2\\Machine learning\\Repositorios\\Problem Set 2\\Problem-Set-2_Machine-Learning_2024",
        ifelse(grepl("Usuario", getwd()), # Julieth1
               wd <- "C:\\Users\\Usuario\\OneDrive - Universidad de los andes\\Escritorio\\Taller 2 Big data",
-              ifelse(grepl("Usuario", getwd()), # Julieth2
-                     wd <- "C:\\Users\\hncar\\Documents\\GitHub\\Problem-Set-1_Machine-Learning_2024",
+              ifelse(grepl("hncar", getwd()),
+                     wd <- "C:\\Users\\hncar\\Documents\\GitHub\\Problem-Set-2_Machine-Learning_2024",
                      ifelse(grepl("C:\\Users\\User", getwd()),  # Henry
                             wd <- "C:\\Users\\User\\OneDrive - Universidad de los Andes\\Big Data y Machine Learning\\Problem_set_1\\Problem_set_1",
                             ifelse(grepl("\\Users\\aleja\\", getwd()), 
