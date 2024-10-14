@@ -150,7 +150,7 @@ getwd()
           
             #Experiencia laboral
             exper_ult_trab = ifelse(is.na(P6426),0,P6426),
-        
+          
           # Variables de cotizacion y regimen
           
             #Dummy afiliacion al SS
@@ -253,7 +253,7 @@ getwd()
         personas_jefe_hogar <- function(data,...){
           data <- data %>% 
             filter(H_Head==1) %>% 
-            select(id,Mujer,EducLevel,Oc, #caracteristicas socioeconomicas
+            select(id,Mujer,EducLevel,Oc,P6040, #caracteristicas socioeconomicas
                    Afiliado_SS,Reg_subs_salud, Cot_pension, #afilicacion y pension
                    exper_ult_trab, #Experiencia laboral
                    Rec_alimento, Rec_vivienda, Rec_otros, Primas, Bonificaciones, #Otros ingresos
@@ -264,6 +264,7 @@ getwd()
             rename(Head_Mujer=Mujer,
                    Head_EducLevel=EducLevel,
                    Head_ocupado=Oc,
+                   Head_edad=P6040,
                    Head_Afiliado_SS=Afiliado_SS,
                    Head_Reg_subs_salud=Reg_subs_salud,
                    Head_Cot_pension=Cot_pension,
@@ -367,7 +368,7 @@ getwd()
     
   
 # Se eliminan de la base las variables pagm_arriendo, pagm_arriendo_est  y pagm_armort.
-# Para las dos primeras, la información ya esta considerando en la variable "Pago_Arriendo".
+# Para las dos primeras, la informaci?n ya esta considerando en la variable "Pago_Arriendo".
 # Para la ultima, ya se esta considerando la informacion en "Valor_Cuota"
  
     Data_Final <- function(data,...){
@@ -390,7 +391,7 @@ db_miss<- db_miss %>% mutate(p_missing= n_missing/Nobs) %>% arrange(-n_missing)
 db_miss 
    
 
-#7. 4 Cambios en variables de predicción 
+#7. 4 Cambios en variables de predicci?n 
     n_train_hogares <- n_train_hogares %>% 
     mutate(Pobre=factor(Pobre,levels=c(0,1),labels=c("No","Yes"))) #pobre como factor)
 
