@@ -141,16 +141,30 @@ write.csv(Prediccion_2,Nombre_2, row.names = FALSE)
 # Re balanceo con SMOTE  --------------------------------------------------
 
 # 2.4.1 Re balanceo usando el Train original 
-Predictores <- train %>%
+
+train_filtro_smote <- Train %>%
+  select(n_cuartos, Nper, nocupados, Cabecera,adultos,ntrabajo_menores,Head_edad, Pobre)
+
+# En Test, omitimos la variable Pobre
+test_filtro_smote <- Test %>%
+  select(id ,n_cuartos, Nper, nocupados, Cabecera,adultos,ntrabajo_menores,Head_edad)
+
+set.seed(123)
+train_indices_2 <- as.integer(createDataPartition(train_filtro_smote$Pobre, p = 0.85, list = FALSE))
+train_SMOTE <- train_filtro_smote[train_indices_2, ]
+test_SMOTE <- train_filtro_smote[-train_indices_2, ]
+prop.table(table(train_filtro_smote$Pobre))
+
+
+
+Predictores <- train_SMOTE %>%
   select(-Pobre) %>%
-  mutate_if(is.factor, as.numeric) %>%  # Convierte factores a numérico
-  mutate_if(is.character, as.numeric) %>% # Convierte caracteres a numérico
   as.data.frame()
 
-SMOTE <- SMOTE(X = Predictores,target = train$Pobre,K=5)
+SMOTE <- SMOTE(X = Predictores,target = train_SMOTE$Pobre,K=5)
 Train_SMOTE <- SMOTE$data
 
-setwd(paste0(wd,"\\Base\\Base_Elastic_Net"))
+#setwd(paste0(wd,"\\Base\\Base_Smote_Logit"))
 
 
 
@@ -160,7 +174,8 @@ logit_smote <- train(class~.,
                      metric = "F",
                      method = "glm",
                      trControl = ctrl,
-                     family = "binomial")
+                     family = "binomial",
+                     preProcess = c("center", "scale"))
 
 
 logit_smote
@@ -169,13 +184,6 @@ logit_SMOTE_F<-logit_smote$results$F
 logit_SMOTE_F
 
 #Test interno
-pobre_col <- test %>% select(Pobre)
-otras_columnas <- test %>% select(-Pobre)
-otras_columnas_transformadas <- otras_columnas %>%
-  mutate_if(is.factor, as.numeric) %>%  # Convierte factores a numérico
-  mutate_if(is.character, as.numeric)   # Convierte caracteres a numérico
-test_SMOTE <- bind_cols(pobre_col, otras_columnas_transformadas) # Volver a unir 
-test_SMOTE <- as.data.frame(test_SMOTE)
 
 test_3 <- test_SMOTE  %>% 
   mutate(Pobre_hat =predict(logit_smote,newdata = test_SMOTE,type = "raw"))
@@ -184,18 +192,15 @@ confusionMatrix(data = test_3$Pobre_hat,
                 reference = test_3$Pobre, positive="Yes", mode = "prec_recall")
 
 # Prediccion fuera de muestra
-test_filtro_SMOTE <- test_filtro  %>% 
-  mutate_if(is.factor, as.numeric) %>%  # Convierte factores a numérico
-  mutate_if(is.character, as.numeric) %>% # Convierte caracteres a numérico
-  as.data.frame()
-  
-Prediccion_3 <- test_filtro_SMOTE %>% 
-  mutate(Pobre =predict(logit_smote,newdata = test_filtro_SMOTE,type = "raw"),
+
+Prediccion_3 <- test_filtro_smote %>% 
+  mutate(Pobre =predict(logit_smote,newdata = test_filtro_smote,type = "raw"),
          pobre=ifelse(Pobre=="Yes",1,0)) %>% 
   select(id,pobre)
 
 
-Nombre_3 <- paste0("LogitSmote_F_", ".csv") 
+Nombre_3 <- paste0("Logit", ".csv") 
 setwd(paste0(wd,"\\Output\\Logit"))
 write.csv(Prediccion_3,Nombre_3, row.names = FALSE)
+
 
