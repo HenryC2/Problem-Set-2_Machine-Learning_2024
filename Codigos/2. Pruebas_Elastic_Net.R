@@ -32,7 +32,7 @@ table(Train$Pobre)
 cat("La tasa de pobrza es", Train%>%select(Pobre)%>% filter(Pobre=="Yes")%>% nrow()/ nrow(Train)*100,"%")
 
 # Debido a que la tasa de pobreza es 20,01%, se debe re balancear la muestra 
-# para mejorar el proceso de estimación. Para ello, se utilizará el método 
+# para mejorar el proceso de estimaci?n. Para ello, se utilizar? el m?todo 
 # "synthetic minority over-sampling technique (SMOTE)" que hacia un muestro hacia 
 # arriba de la clase minoritaria (pobres) y hacia abajo de la clase mayoritaria (no pobres)
 
@@ -41,7 +41,7 @@ cat("La tasa de pobrza es", Train%>%select(Pobre)%>% filter(Pobre=="Yes")%>% nro
 Dummys <- subset(Train, select = c(Dominio,tipo_vivienda,maxEducLevel,Head_EducLevel,
                                    Head_Oficio,Head_Ocupacion))
 
-# Convertir las variables categóricas a factores
+# Convertir las variables categ?ricas a factores
 Dummys$Dominio <- as.factor(Dummys$Dominio)
 Dummys$tipo_vivienda <- as.factor(Dummys$tipo_vivienda)
 Dummys$maxEducLevel <- as.factor(Dummys$maxEducLevel)
@@ -60,7 +60,7 @@ Train <- cbind(subset(Train, select = -c(Dominio,tipo_vivienda,maxEducLevel,Head
 Dummys <- subset(Test, select = c(Dominio,tipo_vivienda,maxEducLevel,Head_EducLevel,
                                    Head_Oficio,Head_Ocupacion))
 
-# Convertir las variables categóricas a factores
+# Convertir las variables categ?ricas a factores
 Dummys$Dominio <- as.factor(Dummys$Dominio)
 Dummys$tipo_vivienda <- as.factor(Dummys$tipo_vivienda)
 Dummys$maxEducLevel <- as.factor(Dummys$maxEducLevel)
@@ -91,7 +91,7 @@ prop.table(table(Test_2$Pobre))
 # 2.4.1 Re balanceo usando el Train original 
 Predictores <- Train %>%
   select(-Pobre) %>%
-  as.data.frame()  # Asegúrate de que sea un dataframe
+  as.data.frame()  # Aseg?rate de que sea un dataframe
 
 SMOTE <- SMOTE(X = Predictores,target = Train$Pobre,K=5)
 Train_SMOTE <- SMOTE$data
@@ -103,20 +103,20 @@ Train_SMOTE = import(file = "Train_SMOTE.rds")
 # 2.4.2 Re balanceo usando el Train_2 
 Predictores_2 <- Train_2 %>%
   select(-Pobre) %>%
-  as.data.frame()  # Asegúrate de que sea un dataframe
+  as.data.frame()  # Aseg?rate de que sea un dataframe
 
 SMOTE_2 <- SMOTE(X = Predictores_2,target = Train_2$Pobre,K=10)
 Train_2_SMOTE <- SMOTE_2$data
 
 setwd(paste0(wd,"\\Base\\Base_Elastic_Net"))
 #export(Train_2_SMOTE, "Train_2_SMOTE.rds")
-Train_SMOTE = import(file = "Train_2_SMOTE.rds")
+Train_2_SMOTE = import(file = "Train_2_SMOTE.rds")
 
 # 3. Se paraleliza -------------------------------------------------------------
 library(doParallel)
 num_cores <- parallel::detectCores()
 print(num_cores)
-cl <- makeCluster(num_cores - 3)  # Usar todos menos 3
+cl <- makeCluster(num_cores - 4)
 registerDoParallel(cl)
 
 # stopCluster(cl)    # Para liberar los nucleos 
@@ -254,3 +254,38 @@ Prediccion_4 <- Test_2   %>%
 f1_score_modelo_4 <- F1_Score(y_true = as.factor(Test_2$Pobre), y_pred = as.factor(Prediccion_4$Pobre), positive = "Yes")
 print(f1_score_modelo_4)
 # 0.5403
+
+
+
+# 4.2.4 Modelo 5
+Regresores_5 = c("n_cuartos","nocupados","Nper","Cabecera","adultos","ntrabajo_menores","Head_ocupado","Head_Mujer")
+
+
+# Definicion del modelo 
+Modelo_5 <- train(formula(paste0("class ~", paste0(Regresores_5, collapse = " + "))),
+                  data=Train_2_SMOTE,
+                  metric = "F",
+                  method = "glmnet",
+                  trControl = fitControl,
+                  family="binomial",
+                  preProcess = c("center", "scale"),
+                  tuneGrid=expand.grid(
+                    alpha = seq(0,1,by=.10),
+                    lambda =10^seq(-1, -3, length = 10)
+                  ))
+
+# Prediccion fuera de muestra
+Prediccion_5 <- Test_2   %>% 
+  mutate(Pobre_hat = predict(Modelo_5, newdata = Test_2, type = "raw")    ## predicted class labels
+  )                
+
+
+confusionMatrix(data = Prediccion_5$Pobre_hat, 
+                reference = Prediccion_5$Pobre, positive="Yes", mode = "prec_recall")
+
+
+
+# F1-Score 
+f1_score_modelo_5 <- F1_Score(y_true = as.factor(Test_2$Pobre), y_pred = as.factor(Prediccion_2$Pobre), positive = "Yes")
+print(f1_score_modelo_5)
+# 0.4738
