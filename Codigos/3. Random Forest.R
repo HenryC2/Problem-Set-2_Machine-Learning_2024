@@ -76,7 +76,7 @@ fitControl<- trainControl(method = "cv",
                           summaryFunction = fiveStats,
                           savePredictions = "final")
 
-mtry_grid<-expand.grid(mtry =c(2,4,6,8,19),
+mtry_grid<-expand.grid(mtry =c(2,4,6,8),
                        min.node.size= c(1,2,5,10), 
                        splitrule= 'gini') #splitrule constante
 
@@ -117,5 +117,55 @@ Prediccion_1_RF <- as.data.frame(Prediccion_1_RF) %>% cbind(Test["id"]) %>%
 Nombre <- paste0("RF_mtry_", "4", "_splitrule_" , "gini","_min.node.size_","10",".csv") 
 setwd(paste0(wd,"\\Output\\Random_Forest"))
 write.csv(Prediccion_1_RF,Nombre, row.names = FALSE)
-          
-          
+
+
+# 3.2 Modelo 2 -----------------------------------------------------------------
+set.seed(1536)
+fiveStats <- function(...)  c(defaultSummary(...),  prSummary(...)) 
+
+fitControl<- trainControl(method = "cv",
+                          number = 5,
+                          classProbs = TRUE,
+                          summaryFunction = fiveStats,
+                          savePredictions = "final")
+
+mtry_grid<-expand.grid(mtry =c(4,8),
+                       min.node.size= c(5,10), 
+                       splitrule= 'gini') #splitrule constante
+
+#3.1 Modelo 1 ------------------------------------------------------------------
+Regresores_2 = c("hacinamiento","nocupados","ndesempleados","ntrabajo_menores","Head_Mujer","Pago_Arriendo","n_cuartos_duermen",
+                 "n_cuartos","Head_ocupado","Head_Afiliado_SS","Head_Cot_pension","Head_Rec_alimento","Head_sub_famil","ninac","Nper")
+
+RF_2<- train(formula(paste0("class ~", paste0(Regresores_2, collapse = " + "))), 
+             data = Train_2_SMOTE,
+             method = "ranger",
+             trControl = fitControl,
+             metric="F",
+             tuneGrid = mtry_grid,
+             ntree=10,
+             importance="impurity")
+
+# Mejor modelo 
+RF_2$finalModel
+
+# Prediccion fuera de muestra
+Prediccion_2_RF <- predict(RF_2, 
+                           newdata = Test_2 ) ## class for class prediction
+# F1-Score 
+f1_score_modelo_RF_2 <- F1_Score(y_true = as.factor(Test_2$Pobre), y_pred = as.factor(Prediccion_2_RF), positive = "Yes")
+# 0.5887
+
+# Prediccion con test 
+Prediccion_2_RF <- predict(RF_2, 
+                           newdata = Test)
+
+# Se deja en el formato requerido
+Prediccion_2_RF <- as.data.frame(Prediccion_2_RF) %>% cbind(Test["id"]) %>%
+  mutate(pobre=ifelse(Prediccion_2_RF=="Yes",1,0)) %>% 
+  select(id,pobre)
+
+
+Nombre <- paste0("RF_mtry_", "4", "_splitrule_" , "gini","_min.node.size_","10",".csv") 
+setwd(paste0(wd,"\\Output\\Random_Forest"))
+write.csv(Prediccion_2_RF,Nombre, row.names = FALSE)
