@@ -399,6 +399,7 @@ n_train_hogares <- n_train_hogares %>%
 #7.4. Exportar bases
 # setwd(paste0(wd,"/Datos/Out")) #Directorios
 setwd(paste0(wd,"\\Base"))
+setwd("C:/Users/Usuario/OneDrive - Universidad de los andes/Escritorio/Taller 2 Big data/Datos/Out") #DirectorioS  # Julieth 
 
 #Hogares
 export(n_train_hogares, "Train_hogares_final.rds") #train hogares
