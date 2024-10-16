@@ -155,7 +155,7 @@ default_knn1 <- train(Pobre ~ tipo_vivienda +
 
 #Test interno - k vecinos
 test_int_knn <- Test1  %>% 
-  mutate(Pobre_hat_knn =predict(default_knn1,newdata = Test1,type = "raw"))
+  mutate(Pobre_hat_knn =predict(default_knn0,newdata = Test1,type = "raw"))
 
 confusionMatrix(data = test_int_knn$Pobre_hat_knn, 
                 reference = test_int_knn$Pobre, positive="Yes", mode = "prec_recall")
@@ -169,6 +169,6 @@ Prediccion_knn <- Test_n  %>%
 
 #Exportar ejercicio ---------------------------------------------------------#
 
-Nombre <- paste0("KNN", ".csv") 
+Nombre <- paste0("KNN_K2", ".csv") 
 setwd(paste0(wd2,"/Output/KNN"))
 write.csv(Prediccion,Nombre, row.names = FALSE)
