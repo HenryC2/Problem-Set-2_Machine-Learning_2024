@@ -137,7 +137,6 @@ ctrl<- trainControl(method = "cv",
     select(id,pobre_lab)
   head(Prediccion_lda0)
 
-
   #Exportar prediccion
   NombreLDA <- paste0("LDA", ".csv") 
   setwd(paste0(wd2,"/Output/LDA"))
@@ -209,4 +208,3 @@ ctrl<- trainControl(method = "cv",
   setwd(paste0(wd2,"/Output/LDA"))
   write.csv(Prediccion_lda_f,Nombre_2, row.names = FALSE)
   view(Prediccion_lda_f)
-
