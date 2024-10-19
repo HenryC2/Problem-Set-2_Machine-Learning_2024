@@ -8,6 +8,8 @@
 
 # Julieth 
 setwd("C:/Users/Usuario/OneDrive - Universidad de los andes/Escritorio/Taller 2 Big data/Datos/Originales") #DirectorioS  # Julieth 
+wd =  "C:/Users/Usuario/OneDrive - Universidad de los andes/Escritorio/Taller 2 Big data" #DirectorioS  # Julieth 
+
 
 # Diego 
 setwd("C:\\Users\\HP\\OneDrive - Universidad Nacional de Colombia\\Documentos\\Diego\\PEG\\2024-2\\Machine learning\\Problem Sets\\Problem_Set_2")  # Diego 
@@ -379,7 +381,9 @@ getwd()
     }
     
     n_train_hogares <- Data_Final(n_train_hogares)
+    str(n_train_hogares)
     n_test_hogares <- Data_Final(n_test_hogares)
+    str(n_test_hogares)
     
 #7.3 Ultima verificacion de NAs
     
@@ -388,7 +392,7 @@ getwd()
   Nobs= nrow(n_train_hogares) 
   db_miss<- db_miss %>% filter(n_missing!= 0)
   db_miss<- db_miss %>% mutate(p_missing= n_missing/Nobs) %>% arrange(-n_missing)
-  db_miss 
+  db_miss #No hay missings
      
 
 #7. 4 Cambios en variables de predicci?n 
@@ -397,8 +401,8 @@ getwd()
 
 
 #7.4. Exportar bases
-    # setwd(paste0(wd,"/Datos/Out")) #Directorios
-    setwd(paste0(wd,"\\Base"))
+    setwd(paste0(wd,"/Datos/Out")) #Directorios
+    #setwd(paste0(wd,"\Base"))
     
     #Hogares
     export(n_train_hogares, "Train_hogares_final.rds") #train hogares

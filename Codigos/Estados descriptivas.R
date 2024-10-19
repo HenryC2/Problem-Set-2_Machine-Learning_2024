@@ -52,7 +52,7 @@ names(Train_n)
 des_vars <- c("Pobre","tipo_vivienda", "Cabecera", "maxEducLevel", "Head_Mujer",
               "Head_EducLevel", "Head_Ocupacion", "Head_Cot_pension", "Head_ocupado", 
               "Head_Afiliado_SS", "Departamento", "Dominio")
-  Train_n <- Train_n %>% mutate_at(des_vars, as.factor)
+Train_n <- Train_n %>% mutate_at(des_vars, as.factor)
   
 subset_data <- Train_n[, c("Pobre", "Cabecera", "Nper",
                            "Dominio", "n_cuartos", "maxEducLevel", "nmenores_6",
