@@ -255,11 +255,8 @@ f1_score_modelo_4 <- F1_Score(y_true = as.factor(Test_2$Pobre), y_pred = as.fact
 print(f1_score_modelo_4)
 # 0.5403
 
-
-
-# 4.2.4 Modelo 5
+# 4.2.4 Modelo 5 ---------------------------------------------------------------
 Regresores_5 = c("n_cuartos","nocupados","Nper","Cabecera","adultos","ntrabajo_menores","Head_ocupado","Head_Mujer")
-
 
 # Definicion del modelo 
 Modelo_5 <- train(formula(paste0("class ~", paste0(Regresores_5, collapse = " + "))),
@@ -289,3 +286,43 @@ confusionMatrix(data = Prediccion_5$Pobre_hat,
 f1_score_modelo_5 <- F1_Score(y_true = as.factor(Test_2$Pobre), y_pred = as.factor(Prediccion_2$Pobre), positive = "Yes")
 print(f1_score_modelo_5)
 # 0.4738
+
+
+#4. Mejor modelo ---------------------------------------------------------------
+# El mejor modelo de acuerdo con el punto de Kaggle fue el Elastic_Net Modelo 3
+# Se procede a correr este modelo con los hiperparámetros que llevaron 
+# a la mejor predicción fuera de muestra. 
+
+# 4. Estimacion VF -------------------------------------------------------------
+Regresores_VF = c("hacinamiento","nocupados","ndesempleados","ntrabajo_menores","Head_Mujer","Pago_Arriendo","n_cuartos_duermen",
+                 "n_cuartos","Head_ocupado","Head_Afiliado_SS","Head_Cot_pension")
+
+# Definicion del modelo 
+Modelo_VF <- train(formula(paste0("class ~", paste0(Regresores_VF, collapse = " + "))),
+                  data=Train_2_SMOTE,
+                  metric = "F",
+                  method = "glmnet",
+                  trControl = fitControl,
+                  family="binomial",
+                  tuneGrid=expand.grid(
+                    alpha = 1,
+                    lambda = 0.001
+                  ))
+
+# Prediccion dentro de muestra
+Prediccion_VF_DM <- Train_2_SMOTE   %>% 
+  mutate(Pobre = predict(Modelo_VF, newdata = Train_2_SMOTE, type = "raw")    ## predicted class labels
+  )  %>% select(Pobre)                 
+
+# F1-Score 
+f1_score_modelo_VF_DM <- F1_Score(y_true = as.factor(Train_2_SMOTE$class), y_pred = as.factor(Prediccion_VF_DM$Pobre), positive = "Yes")
+print(f1_score_modelo_VF_DM)
+
+# Prediccion fuera de muestra
+Prediccion_VF <- Test_2   %>% 
+  mutate(Pobre = predict(Modelo_VF, newdata = Test_2, type = "raw")    ## predicted class labels
+  )  %>% select(Pobre)                 
+
+# F1-Score 
+f1_score_modelo_VF <- F1_Score(y_true = as.factor(Test_2$Pobre), y_pred = as.factor(Prediccion_VF$Pobre), positive = "Yes")
+print(f1_score_modelo_VF)
