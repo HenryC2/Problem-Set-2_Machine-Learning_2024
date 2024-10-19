@@ -185,8 +185,11 @@ p_load('xgboost')
 
 # Definir el control para el entrenamiento
 fitControl <- trainControl(
-  method = "cv",          # Validación cruzada (cross-validation)
-  number = 5             # Número de pliegues (folds)
+  method = "cv",              # Validación cruzada
+  number = 10,                # 10 pliegues
+  classProbs = TRUE,          # Probabilidades de clase
+  summaryFunction = twoClassSummary,  # Para clasificación binaria
+  verboseIter = TRUE          # Mostrar progreso
 )
 
 
@@ -203,7 +206,7 @@ grid_xbgoost
 
 
 set.seed(1011)
-Xgboost_tree <- train(formula(paste0("class ~", paste0(Regresores_1, collapse = " + "))),
+Xgboost_tree <- train(class ~ .,
                       data=Train_2_SMOTE,
                       method = "xgbTree", 
                       trControl = fitControl,
@@ -229,5 +232,10 @@ Prediccion_1_RF <- predict(Xgboost_tree, newdata = Test)
 Prediccion_1_RF <- as.data.frame(Prediccion_1_RF) %>% cbind(Test["id"]) %>%
   mutate(pobre=ifelse(Prediccion_1_RF=="Yes",1,0)) %>% 
   select(id,pobre)
+
+# ------------------------------
+# Prueba 2
+
+
 
 
