@@ -384,12 +384,12 @@ getwd()
 #7.3 Ultima verificacion de NAs
     
 # Tabla parar mirar el porcentaje de missings
-db_miss <- skim(n_train_hogares)
-Nobs= nrow(n_train_hogares) 
-db_miss<- db_miss %>% filter(n_missing!= 0)
-db_miss<- db_miss %>% mutate(p_missing= n_missing/Nobs) %>% arrange(-n_missing)
-db_miss 
-   
+  db_miss <- skim(n_train_hogares) %>% dplyr::select(skim_variable, n_missing)
+  Nobs= nrow(n_train_hogares) 
+  db_miss<- db_miss %>% filter(n_missing!= 0)
+  db_miss<- db_miss %>% mutate(p_missing= n_missing/Nobs) %>% arrange(-n_missing)
+  db_miss 
+     
 
 #7. 4 Cambios en variables de predicci?n 
     n_train_hogares <- n_train_hogares %>% 
