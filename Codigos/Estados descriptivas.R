@@ -216,3 +216,36 @@ d <- ggplot(datos_porcentaje4, aes(x = Head_Mujer, y = porcentaje4, fill = Pobre
   theme(axis.text.x = element_text(angle = 0, hjust = 1)) 
 d
 dev.off()
+
+#Numero de personas del hogar
+
+  setwd(paste0(wd2, "/Graficas"))
+  png("personas_hogar.png", width = 800, height = 600) # Formato de la gráfica
+  
+  # Agrupar los datos y calcular el promedio de personas por hogar según condición de pobreza
+  datos_porcentaje5 <- Train_n %>%
+    group_by(Pobre) %>%
+    summarise(promedio_personas = mean(Nper, na.rm = TRUE))
+  
+  e <- ggplot(datos_porcentaje5, aes(x = factor(Pobre), y = promedio_personas, fill = factor(Pobre))) +
+    geom_bar(stat = "identity", position = "dodge") +
+    geom_text(aes(label = round(promedio_personas, 1)), 
+              position = position_dodge(width = 0.9), 
+              vjust = -0.5, color = "black", size = 3, angle = 0) +
+    scale_x_discrete(labels = c("1" = "Pobre", "0" = "No Pobre")) + # Etiquetas del eje X
+    scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 2)) + # Ajustar la escala de Y
+    scale_fill_manual(values = c("1" = "#87CEFA", "0" = "#CFCFCF"), 
+                      labels = c("Pobre", "No Pobre")) + # Colores personalizados
+    labs(title = "",
+         x = "Condición de Pobreza",
+         y = "Promedio de Personas",
+         fill = "Condición de Pobreza") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 0, hjust = 0.5))
+  print(e)
+  dev.off()
+
+
+#Tipo de regimen de salud
+
+
