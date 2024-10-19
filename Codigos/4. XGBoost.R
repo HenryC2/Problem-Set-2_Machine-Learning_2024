@@ -234,7 +234,8 @@ Prediccion_1_RF <- as.data.frame(Prediccion_1_RF) %>% cbind(Test["id"]) %>%
   select(id,pobre)
 
 # ------------------------------
-# Prueba 2
+# Prueba 2 de XGBoost
+# Tunning
 
 
 
