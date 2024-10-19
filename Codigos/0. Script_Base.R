@@ -38,6 +38,7 @@ p_load(rio,       # importacion/exportacion de datos
        ROSE,     #remuestreo ROSE
        ranger,   #random forest
        xgboost,
+       MLmetrics,
        leaps)  #xgboosting
 
 
