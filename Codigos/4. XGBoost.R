@@ -229,7 +229,7 @@ f1_score_modelo_RF_1 <- F1_Score(y_true = as.factor(Test_2$Pobre), y_pred = as.f
 Prediccion_1_RF <- predict(Xgboost_tree, newdata = Test)
 
 # Se deja en el formato requerido
-Prediccion_1_RF <- as.data.frame(Prediccion_1_RF) %>% cbind(Test["id"]) %>%
+Prediccion_1_xbg <- as.data.frame(Prediccion_1_XGB) %>% cbind(Test["id"]) %>%
   mutate(pobre=ifelse(Prediccion_1_RF=="Yes",1,0)) %>% 
   select(id,pobre)
 
@@ -237,6 +237,34 @@ Prediccion_1_RF <- as.data.frame(Prediccion_1_RF) %>% cbind(Test["id"]) %>%
 # Prueba 2 de XGBoost
 # Tunning
 
+grid_xbgoost <- expand.grid(nrounds = c(500,1000),
+                            max_depth = c(4,6), 
+                            eta = c(0.01,0.05), 
+                            gamma = c(0,1), 
+                            min_child_weight = c(10, 25),
+                            colsample_bytree = c(0.33,0.66),
+                            subsample = c(0.4,0.8))
+
+
+fitControl <- trainControl(
+  method = "cv",              
+  number = 10,                
+  classProbs = TRUE,          
+  summaryFunction = twoClassSummary,
+  verboseIter = TRUE,
+  sampling = "smote",  # Añadir SMOTE en la validación cruzada
+  returnResamp = "all",
+  allowParallel = TRUE,
+  savePredictions = "final"
+)
+
+set.seed(1011)
+Xgboost_tree <- train(class ~ .,
+                      data=Train_2_SMOTE,
+                      method = "xgbTree", 
+                      trControl = fitControl,
+                      tuneLength = 10  # Prueba más combinaciones de parámetros
+)       
 
 
 
