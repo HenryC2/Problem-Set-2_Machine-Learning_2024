@@ -219,8 +219,12 @@ Xgboost_tree_prediccion <- predict(Xgboost_tree_VF,
 # F1-Score 
 f1_score_modelo_xgboost_VF <- F1_Score(y_true = as.factor(Test_3$Pobre), y_pred = as.factor(Xgboost_tree_prediccion), positive = "Yes")
 
-#4.1 Diagrama de algunos de los árboles
+#4.1 Diagrama de algunos de los árboles ---------------------------------------
 p_load(DiagrammeR)
 tree_plot <- xgb.plot.tree(model = Xgboost_tree_VF$finalModel,
                            trees = 1, plot_width = 1000, plot_height = 500)
 tree_plot
+
+#4.2 Importancia de iteraciones ------------------------------------------------
+importance <- varImp(Xgboost_tree_VF, scale = FALSE)
+print(importance)
