@@ -37,7 +37,9 @@ p_load(rio,       # importacion/exportacion de datos
        pROC,
        ROSE,     #remuestreo ROSE
        ranger,   #random forest
-       xgboost)  #xgboosting
+       xgboost,
+       MLmetrics,
+       leaps)  #xgboosting
 
 
 # 1. Definicion del directorio -------------------------------------------------
