@@ -211,7 +211,7 @@ Xgboost_tree_VF <- train(formula(paste0("class ~", paste0(Regresores_VF, collaps
 Xgboost_tree_prediccion_DM <- predict(Xgboost_tree_VF, 
                                       newdata = Train_3_SMOTE)
 # F1-Score 
-f1_score_modelo_xgboost_VF <- F1_Score(y_true = as.factor(Train_3_SMOTE$class), y_pred = as.factor(Xgboost_tree_prediccion_DM), positive = "Yes")
+f1_score_modelo_xgboost_DM <- F1_Score(y_true = as.factor(Train_3_SMOTE$class), y_pred = as.factor(Xgboost_tree_prediccion_DM), positive = "Yes")
 
 # Prediccion fuera de muestra
 Xgboost_tree_prediccion <- predict(Xgboost_tree_VF, 
