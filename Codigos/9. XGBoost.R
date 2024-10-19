@@ -207,8 +207,20 @@ Xgboost_tree_VF <- train(formula(paste0("class ~", paste0(Regresores_VF, collaps
                          metric = "F"
 )
 
+# Prediccion dentro de muestra
+Xgboost_tree_prediccion_DM <- predict(Xgboost_tree_VF, 
+                                      newdata = Train_3_SMOTE)
+# F1-Score 
+f1_score_modelo_xgboost_DM <- F1_Score(y_true = as.factor(Train_3_SMOTE$class), y_pred = as.factor(Xgboost_tree_prediccion_DM), positive = "Yes")
+
 # Prediccion fuera de muestra
-Xgboost_tree_VF <- predict(Xgboost_tree_VF, 
+Xgboost_tree_prediccion <- predict(Xgboost_tree_VF, 
                            newdata = Test_3)
 # F1-Score 
-f1_score_modelo_xgboost_VF <- F1_Score(y_true = as.factor(Test_3$Pobre), y_pred = as.factor(Xgboost_tree_VF), positive = "Yes")
+f1_score_modelo_xgboost_VF <- F1_Score(y_true = as.factor(Test_3$Pobre), y_pred = as.factor(Xgboost_tree_prediccion), positive = "Yes")
+
+#4.1 Diagrama de algunos de los árboles
+p_load(DiagrammeR)
+tree_plot <- xgb.plot.tree(model = Xgboost_tree_VF$finalModel,
+                           trees = 1, plot_width = 1000, plot_height = 500)
+tree_plot
