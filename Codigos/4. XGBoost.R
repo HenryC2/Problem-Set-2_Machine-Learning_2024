@@ -192,7 +192,7 @@ fitControl <- trainControl(
   verboseIter = TRUE          # Mostrar progreso
 )
 
-
+grid_xbgoost
 
 grid_xbgoost <- expand.grid(nrounds = c(100,250),
                             max_depth = c(2,4), 
@@ -236,6 +236,7 @@ Prediccion_1_RF <- as.data.frame(Prediccion_1_RF) %>% cbind(Test["id"]) %>%
 # ------------------------------
 # Prueba 2 de XGBoost
 # Tunning
+
 
 
 
