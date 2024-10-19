@@ -37,9 +37,7 @@ p_load(rio,       # importacion/exportacion de datos
        pROC,
        ROSE,     #remuestreo ROSE
        ranger,   #random forest
-       xgboost,
-       MLmetrics,
-       leaps)  #xgboosting
+       xgboost)  #xgboosting
 
 
 # 1. Definicion del directorio -------------------------------------------------
@@ -52,11 +50,11 @@ ifelse(grepl("HP", getwd()), # Diego
                      wd <- "C:\\Users\\hncar\\Documents\\GitHub\\Problem-Set-2_Machine-Learning_2024",
                      ifelse(grepl("C:\\Users\\User", getwd()),  # Henry
                             wd <- "C:\\Users\\User\\OneDrive - Universidad de los Andes\\Big Data y Machine Learning\\Problem_set_1\\Problem_set_1",
-                            ifelse(grepl("\\Users\\aleja\\", getwd()), 
+                            ifelse(grepl("\\\\Users\\\\aleja\\\\", getwd()), 
                                    wd <- "Directorio",  # Jorge
                                    ifelse(grepl("Steven Ramirez", getwd()), 
-                                          wd <- "",
-                                          wd <- "otro_directorio"))))))
+                                          wd <- "C:/Users/Steven Ramirez/Downloads/Problem-Set-2_Machine-Learning_2024/Problem-Set-2_Machine-Learning_2024",
+                                          "otro_directorio"))))))
 
 
 
