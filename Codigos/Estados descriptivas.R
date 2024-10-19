@@ -37,12 +37,15 @@ Train_n <- Train %>%
          Head_edad,
          Head_Afiliado_SS,
          nmenores_6,
+         adultos,
          nsubsidios,
          ndesempleados,
          nincapacitados) %>%
-  mutate(Pobre = ifelse(Pobre == "Yes", 1, 0)
-)
+  mutate(Pobre = ifelse(Pobre == "Yes", 1, 0),
+         Arriendo = ifelse(tipo_vivienda == 3, 1 ,0) 
+  )
 names(Train_n)
+
 
 
 #Correlacion de variables ----------------------------------------------------*
@@ -54,18 +57,18 @@ des_vars <- c("Pobre","tipo_vivienda", "Cabecera", "maxEducLevel", "Head_Mujer",
               "Head_Afiliado_SS", "Departamento", "Dominio")
 Train_n <- Train_n %>% mutate_at(des_vars, as.factor)
   
-subset_data <- Train_n[, c("Pobre", "Cabecera", "Nper",
-                           "Dominio", "n_cuartos", "maxEducLevel", "nmenores_6",
+subset_data <- Train_n[, c("Pobre", "Cabecera", "Nper","Dominio", "n_cuartos", 
+                           "hacinamiento","maxEducLevel", "nmenores_6", 
                            "nincapacitados", "Head_Mujer", "rsubsidiado",
                            "Head_Cot_pension", "ndesempleados", "Head_Afiliado_SS", 
-                           "Head_ocupado","Head_EducLevel", "hacinamiento", "ndesempleados")]
+                           "Head_ocupado","Head_EducLevel", "adultos")]
 
 
 
 #3. Calcular la matriz de correlación para esas variables
 setwd(paste0(wd2,"/Graficas"))
+
 png("graf_corr_var.png") # Formato grafica
-# Calcular la matriz de correlación
 subset_data_num <- subset_data[sapply(subset_data, is.numeric)]
 
 # Calcular la matriz de correlación
@@ -73,7 +76,6 @@ cor_matrix <- cor(subset_data_num, use = "complete.obs")
 print(cor_matrix)
 
 # Visualizar la matriz de correlación
-library(corrplot)
 corrplot(cor_matrix,
          tl.cex = 0.8,               # Tamaño de los labels
          tl.col = "black",           # Color de los labels (negro en este caso)
@@ -83,6 +85,7 @@ corrplot(cor_matrix,
 
 # Finalizar la gráfica y cerrar el dispositivo gráfico
 dev.off()
+
 
 
 
@@ -123,7 +126,7 @@ dev.off()
 
 
 
-# Po clase -------------------------------------------------------------------#
+# Por clase -------------------------------------------------------------------#
 
 setwd(paste0(wd2,"/Graficas"))
 png("Clase.png") # Formato grafica
