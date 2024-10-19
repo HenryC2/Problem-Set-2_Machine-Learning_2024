@@ -109,7 +109,7 @@ SMOTE_2 <- SMOTE(X = Predictores_2,target = Train_2$Pobre,K=10)
 Train_2_SMOTE <- SMOTE_2$data
 
 setwd(paste0(wd,"\\Base\\Base_Elastic_Net"))
-#export(Train_2_SMOTE, "Train_2_SMOTE.rds")
+#export(Train_2_SMOTE, "Train_3_SMOTE.rds")
 Train_2_SMOTE = import(file = "Train_2_SMOTE.rds")
 
 # 3. Se paraleliza -------------------------------------------------------------
