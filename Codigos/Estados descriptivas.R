@@ -356,5 +356,3 @@ stargazer(base_modelo, type = "text", title = "Estadisticas basicas de las varia
 
 # Genera el código LaTeX con los nombres modificados
 
-
->>>>>>> 37ad6e3f5675e36b7c11e9def38369e883e0364e
