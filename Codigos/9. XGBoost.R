@@ -7,8 +7,8 @@ setwd(paste0(wd,"/Base"))
 Train <- import(file = "Train_hogares_final.rds")
 Test <- import(file = "Test_hogares_final.rds")
 
-# 1. Carga de información balanceada (SMOTE) -----------------------------------
-# Este procedimiento se realizo en el código 2.Pruebas_Elastic_Net
+# 1. Carga de informaci?n balanceada (SMOTE) -----------------------------------
+# Este procedimiento se realizo en el c?digo 2.Pruebas_Elastic_Net
 setwd(paste0(wd,"\\Base\\Base_Elastic_Net"))
 Train_3_SMOTE = import(file = "Train_3_SMOTE.rds")
 
@@ -20,7 +20,7 @@ Test_3 <- Train[-Train_3_indices, ]
 prop.table(table(Train_3$Pobre))
 prop.table(table(Test_3$Pobre))
 
-# Convertir las variables categóricas a factores en Test
+# Convertir las variables categ?ricas a factores en Test
 Dummys <- subset(Test, select = c(Dominio,tipo_vivienda,maxEducLevel,Head_EducLevel,
                                   Head_Oficio,Head_Ocupacion))
 
@@ -37,7 +37,7 @@ Dummys <- model.matrix(~ . - 1, data = Dummys)  # Eliminar el intercepto
 Test <- cbind(subset(Test, select = -c(Dominio,tipo_vivienda,maxEducLevel,Head_EducLevel,
                                        Head_Oficio,Head_Ocupacion)),Dummys)
 
-# Convertir las variables categóricas a factores en test_3
+# Convertir las variables categ?ricas a factores en test_3
 Dummys <- subset(Test_3, select = c(Dominio,tipo_vivienda,maxEducLevel,Head_EducLevel,
                                     Head_Oficio,Head_Ocupacion))
 
@@ -179,8 +179,8 @@ write.csv(Prediccion_2_xgboost,Nombre, row.names = FALSE)
 
 #4. Mejor modelo ---------------------------------------------------------------
 # El mejor modelo de acuerdo con el punto de Kaggle fue el Prediccion_2_Xgboost
-# Se procede a correr este modelo con los hiperparámetros que llevaron 
-# a la mejor predicción fuera de muestra. 
+# Se procede a correr este modelo con los hiperpar?metros que llevaron 
+# a la mejor predicci?n fuera de muestra. 
 
 # 4. Estimacion VF -------------------------------------------------------------
 Regresores_VF = c(colnames(Train_3_SMOTE)[1:26],colnames(Train_3_SMOTE)[35:43],colnames(Train_3_SMOTE)[69:85],
@@ -203,7 +203,7 @@ Xgboost_tree_VF <- train(formula(paste0("class ~", paste0(Regresores_VF, collaps
                          data = Train_3_SMOTE,
                          method = "xgbTree", 
                          trControl = fitControl,
-                         tuneGrid = grid_xgboost,  # Especificamos los hiperparámetros aquí
+                         tuneGrid = grid_xgboost,  # Especificamos los hiperpar?metros aqu?
                          metric = "F"
 )
 
@@ -213,13 +213,55 @@ Xgboost_tree_prediccion_DM <- predict(Xgboost_tree_VF,
 # F1-Score 
 f1_score_modelo_xgboost_DM <- F1_Score(y_true = as.factor(Train_3_SMOTE$class), y_pred = as.factor(Xgboost_tree_prediccion_DM), positive = "Yes")
 
+# 4. Estimacion con interacciones adicionales -------------------------------------------------------------
+library(doParallel)
+num_cores <- parallel::detectCores()
+print(num_cores)
+cl <- makeCluster(6)  # Usar todos menos 3
+registerDoParallel(cl)
+#stopCluster(cl)    # Para liberar los nucleos
+gc()
+
+Regresores_VF = c(colnames(Train_3_SMOTE)[1:26],colnames(Train_3_SMOTE)[35:43],colnames(Train_3_SMOTE)[69:85],
+                  colnames(Train_3_SMOTE)[168:176],"Head_edad*Head_edad","Head_Mujer*Head_edad", "rsubsidiado*Pago_Arriendo", 
+                  "Head_Reg_subs_salud*nocupados", "Pago_Arriendo^2")
+
+fitControl<- trainControl(method = "cv",
+                          number = 5,
+                          classProbs = TRUE,
+                          savePredictions = "final")
+
+grid_xgboost <- expand.grid(nrounds = 500,
+                            max_depth = 6, 
+                            eta = 0.05, 
+                            gamma = 0, 
+                            min_child_weight = 20,
+                            colsample_bytree = 0.66,
+                            subsample = 0.8)
+
+Xgboost_tree_VF <- train(formula(paste0("class ~", paste0(Regresores_VF, collapse = " + "))),
+                         data = Train_3_SMOTE,
+                         method = "xgbTree", 
+                         trControl = fitControl,
+                         tuneGrid = grid_xgboost,  # Especificamos los hiperpar?metros aqu?
+                         metric = "F"
+)
+
+# Prediccion dentro de muestra
+Xgboost_tree_prediccion_DM <- predict(Xgboost_tree_VF, 
+                                      newdata = Train_3_SMOTE)
+# F1-Score 
+f1_score_modelo_xgboost_DM <- F1_Score(y_true = as.factor(Train_3_SMOTE$class), y_pred = as.factor(Xgboost_tree_prediccion_DM), positive = "Yes")
+f1_score_modelo_xgboost_DM
+
 # Prediccion fuera de muestra
 Xgboost_tree_prediccion <- predict(Xgboost_tree_VF, 
                            newdata = Test_3)
 # F1-Score 
 f1_score_modelo_xgboost_VF <- F1_Score(y_true = as.factor(Test_3$Pobre), y_pred = as.factor(Xgboost_tree_prediccion), positive = "Yes")
+f1_score_modelo_xgboost_VF
 
-#4.1 Diagrama de algunos de los árboles ---------------------------------------
+#4.1 Diagrama de algunos de los ?rboles ---------------------------------------
 p_load(DiagrammeR)
 tree_plot <- xgb.plot.tree(model = Xgboost_tree_VF$finalModel,
                            trees = 1, plot_width = 1000, plot_height = 500)
