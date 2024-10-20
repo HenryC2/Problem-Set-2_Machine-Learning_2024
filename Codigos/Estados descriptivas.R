@@ -271,6 +271,12 @@ base_modelo <- base_modelo %>%
     `Vivienda en usufructo` = tipo_vivienda4,
     `Posesion sin titulo` = tipo_vivienda5,
     `Otro tipo de vivienda` = tipo_vivienda6,
+    `Maximo nivel educativo(Ninguno)` = maxEducLevelNinguno,
+    `Maximo nivel educativo(preescolar)` = maxEducLevelPreescolar,
+    `Maximo nivel educativo(primaria)` = maxEducLevelPrimaria,
+    `Maximo nivel educativo(secundaria)` = maxEducLevelSecundaria,
+    `Maximo nivel educativo(media)` = maxEducLevelMedia,
+    `Maximo nivel educativo(universidad)` = maxEducLevelUniversitaria,
     `Jefe no tiene educacion` = Head_EducLevelNinguno,
     `Jefe tiene preescolar` = Head_EducLevelPreescolar,
     `Jefe tiene primaria` = Head_EducLevelPrimaria,
@@ -286,8 +292,6 @@ base_modelo <- base_modelo %>%
     `Jefe trabaja en empresa sin remuneración` = Head_Ocupacion7,
     `Jefe es jornalero` = Head_Ocupacion8,
     `Jefe trabaja en otra ocupación` = Head_Ocupacion9,
-    
-    
   )
 
 
