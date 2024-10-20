@@ -297,3 +297,5 @@ stargazer(base_modelo, type = "text", title = "Estadisticas basicas de las varia
 # Genera el código LaTeX con los nombres modificados
 #stargazer(base_modelo, type = "latex", title = "Estadisticas basicas de las variables en el modelo", out = "estadisticas basicas.tex")
 
+
+

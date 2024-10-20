@@ -6,7 +6,6 @@
 # 1. Cargar base de datos de entrenamiento y testeo ----------------------------
 #-------------------------------------------------------------------------------
 
-
   ### Bases de datos de entrenamiento
     
     #Hogares
