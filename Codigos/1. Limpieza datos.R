@@ -6,14 +6,6 @@
 # 1. Cargar base de datos de entrenamiento y testeo ----------------------------
 #-------------------------------------------------------------------------------
 
-# Julieth 
-setwd("C:/Users/Usuario/OneDrive - Universidad de los andes/Escritorio/Taller 2 Big data/Datos/Originales") #DirectorioS  # Julieth 
-wd =  "C:/Users/Usuario/OneDrive - Universidad de los andes/Escritorio/Taller 2 Big data" #DirectorioS  # Julieth 
-
-
-# Diego 
-setwd("C:\\Users\\HP\\OneDrive - Universidad Nacional de Colombia\\Documentos\\Diego\\PEG\\2024-2\\Machine learning\\Problem Sets\\Problem_Set_2")  # Diego 
-getwd()
 
   ### Bases de datos de entrenamiento
     
