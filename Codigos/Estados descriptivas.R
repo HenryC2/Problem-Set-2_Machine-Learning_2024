@@ -65,7 +65,7 @@ subset_data <- Train_n[, c("Pobre", "Cabecera", "Nper","Dominio", "n_cuartos",
 #3. Calcular la matriz de correlación para esas variables
 setwd(paste0(wd2,"/Graficas"))
 
-png("graf_corr_var.png") # Formato grafica
+png("graf_corr_var.png", width = 1000, height = 800) # Formato grafica
 subset_data_num <- subset_data[sapply(subset_data, is.numeric)]
 
 # Calcular la matriz de correlación
@@ -90,7 +90,7 @@ dev.off()
 
 # Calcular porcentajes por tipo de vivienda y condición de pobreza
 setwd(paste0(wd2,"/Graficas"))
-png("tipo_vivienda.png") # Formato grafica
+png("tipo_vivienda.png", width = 2000, height = 1500, res = 300) # Formato grafica
 datos_porcentaje <- Train_n %>%
   group_by(Pobre, tipo_vivienda) %>%
   summarise(count = n()) %>%
@@ -118,7 +118,7 @@ a <- ggplot(datos_porcentaje, aes(x = tipo_vivienda, y = porcentaje, fill = Pobr
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   coord_flip() # Hacer la gráfica horizontal
-a
+print(a)
 dev.off()
 
 
@@ -126,7 +126,7 @@ dev.off()
 # Por clase -------------------------------------------------------------------#
 
 setwd(paste0(wd2,"/Graficas"))
-png("Clase.png") # Formato grafica
+png("Clase.png", width = 2000, height = 1500, res = 300) # Formato grafica
 datos_porcentaje2 <- Train_n %>%
   group_by(Pobre, Cabecera) %>%
   summarise(count = n()) %>%
@@ -156,7 +156,7 @@ dev.off()
 
 
 setwd(paste0(wd2,"/Graficas"))
-png("Educacion.png") # Formato grafica
+png("Educacion.png", width = 2000, height = 1500, res = 300) # Formato grafica
 datos_porcentaje3 <- Train_n %>%
   group_by(Pobre, maxEducLevel) %>%
   summarise(count = n()) %>%
@@ -188,7 +188,7 @@ dev.off()
 
 
 setwd(paste0(wd2,"/Graficas"))
-png("Jefatura.png") # Formato grafica
+png("Jefatura.png", width = 2000, height = 1500, res = 300) # Formato grafica
 datos_porcentaje4 <- Train_n %>%
   group_by(Pobre, Head_Mujer) %>%
   summarise(count = n()) %>%
@@ -214,6 +214,67 @@ d <- ggplot(datos_porcentaje4, aes(x = Head_Mujer, y = porcentaje4, fill = Pobre
 d
 dev.off()
 
+<<<<<<< HEAD
+#Numero de personas del hogar
+
+  setwd(paste0(wd2, "/Graficas"))
+  png("personas_hogar.png", width = 2000, height = 1500, res = 400) # Formato de la gráfica
+  
+  # Agrupar los datos y calcular el promedio de personas por hogar según condición de pobreza
+  datos_porcentaje5 <- Train_n %>%
+    group_by(Pobre) %>%
+    summarise(promedio_personas = mean(Nper, na.rm = TRUE))
+  
+  e <- ggplot(datos_porcentaje5, aes(x = factor(Pobre), y = promedio_personas, fill = factor(Pobre))) +
+    geom_bar(stat = "identity", position = "dodge") +
+    geom_text(aes(label = round(promedio_personas, 1)), 
+              position = position_dodge(width = 0.9), 
+              vjust = -0.5, color = "black", size = 3, angle = 0) +
+    scale_x_discrete(labels = c("1" = "Pobre", "0" = "No Pobre")) + # Etiquetas del eje X
+    scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 2)) + # Ajustar la escala de Y
+    scale_fill_manual(values = c("1" = "#87CEFA", "0" = "#CFCFCF"), 
+                      labels = c("Pobre", "No Pobre")) + # Colores personalizados
+    labs(title = "",
+         x = "Condición de Pobreza",
+         y = "Promedio de Personas",
+         fill = "Condición de Pobreza") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 0, hjust = 0.5))   +
+    theme(legend.position = "none")  # Eliminar la leyenda
+  print(e)
+  dev.off()
+
+
+#Numero de cuartos
+  
+
+  setwd(paste0(wd2, "/Graficas"))
+  png("num_cuartos.png", width = 2000, height = 1500, res = 400) # Formato de la gráfica
+  
+  # Agrupar los datos y calcular el promedio de personas por hogar según condición de pobreza
+  datos_porcentaje6 <- Train_n %>%
+    group_by(Pobre) %>%
+    summarise(prom_cuartos = mean(n_cuartos, na.rm = TRUE))
+  
+  f <- ggplot(datos_porcentaje6, aes(x = factor(Pobre), y = prom_cuartos, fill = factor(Pobre))) +
+    geom_bar(stat = "identity", position = "dodge") +
+    geom_text(aes(label = round(prom_cuartos, 1)), 
+              position = position_dodge(width = 0.9), 
+              vjust = -0.5, color = "black", size = 3, angle = 0) +
+    scale_x_discrete(labels = c("1" = "Pobre", "0" = "No Pobre")) + # Etiquetas del eje X
+    scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, by = 2)) + # Ajustar la escala de Y
+    scale_fill_manual(values = c("1" = "#87CEFA", "0" = "#CFCFCF"), 
+                      labels = c("Pobre", "No Pobre")) + # Colores personalizados
+    labs(title = "",
+         x = "Condición de Pobreza",
+         y = "Promedio de cuartos",
+         fill = "Condición de Pobreza") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 0, hjust = 0.5)) +
+    theme(legend.position = "none")  # Eliminar la leyenda
+  print(f)
+  dev.off()
+=======
 
 
 # Estadísticas datos de la base SMOTE -------------------------------------
@@ -296,3 +357,4 @@ stargazer(base_modelo, type = "text", title = "Estadisticas basicas de las varia
 # Genera el código LaTeX con los nombres modificados
 
 
+>>>>>>> 37ad6e3f5675e36b7c11e9def38369e883e0364e

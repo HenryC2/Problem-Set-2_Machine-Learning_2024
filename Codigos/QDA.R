@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------#
-#------------------------------------ LASSO -----------------------------------#
+#-------------------------------MODELOS QDA -----------------------------------#
 #------------------------------------------------------------------------------#
 
 #-------------------------------------------------------------------------------
@@ -40,9 +40,12 @@ Train_n <- Train %>%
          Head_edad,
          Head_Afiliado_SS,
          nmenores_6,
+         nocupados,
          nsubsidios,
+         rsubsidiado,
          ndesempleados,
-         nincapacitados) 
+         nincapacitados) %>%
+  ungroup()
 names(Train_n)
 
 
@@ -64,10 +67,11 @@ Test_n <- Test %>%
          Head_edad,
          Head_Afiliado_SS,
          nmenores_6,
+         nocupados,
          nsubsidios,
+         rsubsidiado,
          ndesempleados,
          nincapacitados) 
-
 
 des_vars <- c("tipo_vivienda", "Cabecera", "maxEducLevel", "Head_Mujer",
               "Head_EducLevel", "Head_Ocupacion", "Head_Cot_pension", "Head_ocupado", 
@@ -76,6 +80,8 @@ stargazer:: stargazer(as.data.frame(Train_n[,des_vars]), type="text")
 Train_n <- Train_n %>% mutate_at(des_vars, as.factor)
 Test_n <- Test_n %>% mutate_at(des_vars, as.factor)
 
+
+
 # Dividir aleatoriamente los datos en entrenamiento y un conjunto de prueba
 set.seed(54832)
 train_indices <- as.integer(createDataPartition(Train_n$Pobre, p = 0.85, list = FALSE))
@@ -83,99 +89,64 @@ Train1 <- Train_n[train_indices, ]
 Test1 <- Train_n[-train_indices, ]
 prop.table(table(Train_n$Pobre))
 
-#-------------------------------------------------------------------------------
-# 1.LASSO --------------- ------------------------------------------------------
-#-------------------------------------------------------------------------------
 
-#Definir modelo
-
-model_form<-  Pobre ~ tipo_vivienda + 
-  Cabecera +
-  Nper +
-  Dominio +
-  Departamento +
-  n_cuartos +
-  maxEducLevel +
-  Head_Ocupacion +
-  Head_Mujer +
-  rsubsidiado +
-  nsubsidios +
-  Head_EducLevel + 
-  Head_Cot_pension +
-  Head_ocupado +
-  Head_edad +
-  Head_Afiliado_SS +
-  nmenores_6 +
-  nincapacitados
-
-
-#Validacion cruzada
-fitControl <- trainControl( 
-  method = "cv",
-  number = 10) ##  10 fold CV
-
-y <- Train1$Pobre
-y <- ifelse(as.character(y) == "Yes", 1, 0)
-
-# Predictors in matrix form
-X<- model.matrix(model_form, ## formula
-                 data = Train1)
-X<-X[,-1] #remove constant
-X
-
-#Modelo lasso
-lasso0 <- glmnet(
-  x = X,
-  y = y,
-  alpha = 1 # lasso penalty
+#Validazcion cruzada 10 veces
+ctrl<- trainControl(method = "cv",
+                    number = 10,
+                    classProbs = TRUE,
+                    savePredictions = TRUE,
+                    verbose=FALSE
 )
-lasso0
-dim(coef(lasso0))
-
-#Caret
-set.seed(308873) 
-lasso<-train(model_form,
-             data=Train1,
-             method = 'glmnet', 
-             trControl = fitControl,
-             tuneGrid = expand.grid(alpha = 1, #lasso
-                                    lambda = lasso0$lambda )
-) 
-lasso$bestTune #Lamda - 0.0002876792
-coef_lasso<-coef(lasso$finalModel, lasso$bestTune$lambda)
-coef_lasso
-
-#Modelo con lamdda establecido 0.0002876792
-
-set.seed(308873) 
-lasso1 <-train(model_form,
-             data=Train1,
-             method = 'glmnet', 
-             trControl = fitControl,
-             tuneGrid = expand.grid(alpha = 1, #lasso
-                                    lambda = 0.0002876792 )
-) 
-lasso_accuracy0<-lasso1$results$Accuracy
-lasso_accuracy0 #0.842487
 
 
-#Test interno - LASSO
-test_int_Lasso <- Test1  %>% 
-  mutate(Pobre_hat =predict(lasso1,newdata = Test1,type = "raw"))
 
-confusionMatrix(data = test_int_Lasso$Pobre_hat, 
-                reference = test_int_Lasso$Pobre, positive="Yes", mode = "prec_recall") #F1: 0.5017  
+#------------------------------------------------------------------------------#
+#                         MODELO QDA
+#------------------------------------------------------------------------------#
 
-# Prediccion fuera de muestra - LASSO-------------------------------------------#
+set.seed(54832)
+modelo_qda0 = train(Pobre ~ tipo_vivienda + 
+                      Cabecera +
+                      Nper  +
+                      n_cuartos +
+                      nmenores_6 +
+                      Head_Mujer +
+                      Head_Mujer +
+                      rsubsidiado +
+                      nsubsidios +
+                      Head_EducLevel + 
+                      Head_Cot_pension +
+                      Head_ocupado +
+                      Head_edad +
+                      Head_Afiliado_SS +
+                      nmenores_6 +
+                      nocupados +
+                      rsubsidiado +
+                      nincapacitados,
+                    data = Train1,  
+                    method="qda",
+                    trControl = ctrl)
+modelo_qda0
+qda_accuracy0<-modelo_qda0$results$Accuracy
+qda_accuracy0
 
-Prediccion_lasso0 <- Test_n  %>% 
-  mutate(pobre_lab = predict(lasso1, newdata = Test_n,type = "raw"),
-         pobre_lab=ifelse(pobre_lab=="Yes",1,0)) %>% 
+
+#Test interno
+test_qda <- Test1  %>% 
+  mutate(Pobre_hat_qda=predict(modelo_qda0,newdata = Test1,type = "raw"))
+
+confusionMatrix(data = test_qda$Pobre_hat_qda, 
+                reference = test_qda$Pobre, positive="Yes", mode = "prec_recall")
+
+# Prediccion fuera de muestra
+Prediccion_qda <- Test_n  %>% 
+  mutate(pobre_lab =predict(modelo_qda0,newdata = Test_n,type = "raw"),
+         pobre_lab =ifelse(pobre_lab=="Yes",1,0)) %>% 
   select(id,pobre_lab)
-head(Prediccion_lasso0)
 
-#Exportar prediccion
-NombreLASSO <- paste0("L_", "lambda_", "0.0002", "alpha_", "1", ".csv") 
-setwd(paste0(wd2,"/Output/Lasso"))
-write.csv(Prediccion_lasso0,NombreLASSO, row.names = FALSE)
+#Exportar resultados
+Nombre_qda <- paste0("QDA", ".csv") 
+setwd(paste0(wd2,"/Output/QDA"))
+write.csv(Prediccion_qda,Nombre_qda, row.names = FALSE)
+view(Prediccion_qda)
 

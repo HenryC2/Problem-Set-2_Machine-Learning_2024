@@ -163,12 +163,12 @@ confusionMatrix(data = test_int_knn$Pobre_hat_knn,
 
 # Prediccion fuera de muestra - KNN-------------------------------------------#
 Prediccion_knn <- Test_n  %>% 
-  mutate(Pobre_knn =predict(default_knn1, newdata = Test_n,type = "raw"),
-         Pobre_knn=ifelse(Pobre=="Yes",1,0)) %>% 
+  mutate(pobre_lab =predict(default_knn1, newdata = Test_n,type = "raw"),
+         pobre_lab=ifelse(pobre_lab=="Yes",1,0)) %>% 
   select(id,pobre_lab)
 
 #Exportar ejercicio ---------------------------------------------------------#
 
-Nombre <- paste0("KNN_K2", ".csv") 
+Nombre <- paste0("KNN", ".csv") 
 setwd(paste0(wd2,"/Output/KNN"))
 write.csv(Prediccion,Nombre, row.names = FALSE)
