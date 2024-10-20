@@ -237,6 +237,48 @@ Prediccion_1_xbg <- as.data.frame(Prediccion_1_XGB) %>% cbind(Test["id"]) %>%
 # Prueba 2 de XGBoost
 # Tunning
 
+#C Variables.
+
+Train <- import(file = "Base/Train_hogares_final.rds")
+
+
+Train_n <- Train %>% 
+  select( Pobre ,tipo_vivienda , 
+          Cabecera,
+          Nper,
+          n_cuartos,
+          maxEducLevel,
+          Head_Ocupacion ,
+          Head_Mujer,
+          rsubsidiado,
+          nsubsidios,
+          Head_EducLevel, 
+          Head_Cot_pension ,
+          Head_ocupado,
+          Head_edad,
+          Head_Afiliado_SS,
+          nmenores_6,
+          nincapacitados) 
+names(Train_n)
+str(Train_n)
+
+model_form <- Pobre ~ tipo_vivienda + 
+  Cabecera +
+  Nper +
+  n_cuartos +
+  maxEducLevel +
+  Head_Ocupacion +
+  Head_Mujer +
+  rsubsidiado +
+  nsubsidios +
+  Head_EducLevel + 
+  Head_Cot_pension +
+  Head_ocupado +
+  Head_edad +
+  Head_Afiliado_SS +
+  nmenores_6 +
+  nincapacitados
+
 grid_xbgoost <- expand.grid(nrounds = c(500,1000),
                             max_depth = c(4,6), 
                             eta = c(0.01,0.05), 
@@ -259,8 +301,8 @@ fitControl <- trainControl(
 )
 
 set.seed(1011)
-Xgboost_tree <- train(class ~ .,
-                      data=Train_2_SMOTE,
+Xgboost_tree <- train(model_form,
+                      data=Train_n,
                       method = "xgbTree", 
                       trControl = fitControl,
                       tuneLength = 10  # Prueba más combinaciones de parámetros
