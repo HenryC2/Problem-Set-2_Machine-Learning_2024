@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------#
-#------------------------ MODELOS DE CLASIFICACION ----------------------------#
+#--------------------------------- MODELOS DE LDA ----------------------------#
 #------------------------------------------------------------------------------#
 
 #-------------------------------------------------------------------------------
@@ -40,9 +40,12 @@ Train_n <- Train %>%
          Head_edad,
          Head_Afiliado_SS,
          nmenores_6,
+         nocupados,
          nsubsidios,
+         rsubsidiado,
          ndesempleados,
-         nincapacitados) 
+         nincapacitados) %>%
+  ungroup()
 names(Train_n)
 
 
@@ -64,7 +67,9 @@ Test_n <- Test %>%
          Head_edad,
          Head_Afiliado_SS,
          nmenores_6,
+         nocupados,
          nsubsidios,
+         rsubsidiado,
          ndesempleados,
          nincapacitados) 
 
@@ -208,3 +213,5 @@ ctrl<- trainControl(method = "cv",
   setwd(paste0(wd2,"/Output/LDA"))
   write.csv(Prediccion_lda_f,Nombre_2, row.names = FALSE)
   view(Prediccion_lda_f)
+
+ 
