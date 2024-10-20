@@ -231,13 +231,13 @@ fitControl<- trainControl(method = "cv",
                           classProbs = TRUE,
                           savePredictions = "final")
 
-grid_xgboost <- expand.grid(nrounds = 500,
-                            max_depth = 6, 
-                            eta = 0.05, 
-                            gamma = 0, 
-                            min_child_weight = 20,
-                            colsample_bytree = 0.66,
-                            subsample = 0.8)
+grid_xgboost <- expand.grid(nrounds = c(500, 1000),
+                            max_depth = c(4, 6, 8), 
+                            eta = c(0.01, 0.02, 0.05), 
+                            gamma = c(0, 0.1, 0.5), 
+                            min_child_weight = c(10, 20),
+                            colsample_bytree = c(0.5, 0.66, 0.8),
+                            subsample = c(0.6, 0.7, 0.8))
 
 Xgboost_tree_VF <- train(formula(paste0("class ~", paste0(Regresores_VF, collapse = " + "))),
                          data = Train_3_SMOTE,
@@ -260,6 +260,151 @@ Xgboost_tree_prediccion <- predict(Xgboost_tree_VF,
 # F1-Score 
 f1_score_modelo_xgboost_VF <- F1_Score(y_true = as.factor(Test_3$Pobre), y_pred = as.factor(Xgboost_tree_prediccion), positive = "Yes")
 f1_score_modelo_xgboost_VF
+
+# 4. Estimacion VF con nuevas variables-------------------------------------------------------------
+library(doParallel)
+num_cores <- parallel::detectCores()
+print(num_cores)
+cl <- makeCluster(6)  # Usar todos menos 3
+registerDoParallel(cl)
+#stopCluster(cl)    # Para liberar los nucleos
+gc()
+
+#--------------------------------
+
+# Convertir las variables categ?ricas a factores en Test
+Dummys <- subset(Test, select = c(Dominio,tipo_vivienda,maxEducLevel,Head_EducLevel,
+                                  Head_Oficio,Head_Ocupacion))
+
+Dummys$Dominio <- as.factor(Dummys$Dominio)
+Dummys$tipo_vivienda <- as.factor(Dummys$tipo_vivienda)
+Dummys$maxEducLevel <- as.factor(Dummys$maxEducLevel)
+Dummys$Head_EducLevel <- as.factor(Dummys$Head_EducLevel)
+Dummys$Head_Oficio <- as.factor(Dummys$Head_Oficio)
+Dummys$Head_Ocupacion <- as.factor(Dummys$Head_Ocupacion)
+
+Dummys <- model.matrix(~ . - 1, data = Dummys)  # Eliminar el intercepto
+
+# Union con la base original
+Test <- cbind(subset(Test, select = -c(Dominio,tipo_vivienda,maxEducLevel,Head_EducLevel,
+                                       Head_Oficio,Head_Ocupacion)),Dummys)
+
+# Convertir las variables categ?ricas a factores en test_3
+Dummys <- subset(Test, select = c(Dominio,tipo_vivienda,maxEducLevel,Head_EducLevel,
+                                    Head_Oficio,Head_Ocupacion))
+
+Dummys$Dominio <- as.factor(Dummys$Dominio)
+Dummys$tipo_vivienda <- as.factor(Dummys$tipo_vivienda)
+Dummys$maxEducLevel <- as.factor(Dummys$maxEducLevel)
+Dummys$Head_EducLevel <- as.factor(Dummys$Head_EducLevel)
+Dummys$Head_Oficio <- as.factor(Dummys$Head_Oficio)
+Dummys$Head_Ocupacion <- as.factor(Dummys$Head_Ocupacion)
+
+Dummys <- model.matrix(~ . - 1, data = Dummys)  # Eliminar el intercepto
+
+# Union con la base original
+Test <- cbind(subset(Test, select = -c(Dominio,tipo_vivienda,maxEducLevel,Head_EducLevel,
+                                           Head_Oficio,Head_Ocupacion)),Dummys)
+
+
+#------
+
+Train_3_SMOTE$niños_nper <- Train_3_SMOTE$nmenores_6 / Train_3_SMOTE$Nper
+Train_3_SMOTE$ocupados_nper <- Train_3_SMOTE$nocupados / Train_3_SMOTE$Nper
+Train_3_SMOTE$pa_nper <- Train_3_SMOTE$nocupados / Train_3_SMOTE$Pago_Arriendo
+
+Test_3$niños_nper <- Test_3$nmenores_6 / Test_3$Nper
+Test_3$ocupados_nper <- Test_3$nocupados / Test_3$Nper
+Test_3$pa_nper <- Test_3$nocupados / Test_3$Pago_Arriendo
+
+Test$niños_nper <- Test$nmenores_6 / Test$Nper
+Test$ocupados_nper <- Test$nocupados / Test$Nper
+Test$pa_nper <- Test$nocupados / Test$Pago_Arriendo
+
+# Verifica si las columnas nmenores_6 y nper existen
+summary(Train_3_SMOTE$nmenores_6)
+summary(Train_3_SMOTE$Nper)
+
+
+
+Regresores_VF = c(colnames(Train_3_SMOTE)[1:50],colnames(Train_3_SMOTE)[69:85],
+                  colnames(Train_3_SMOTE)[168:176], "niños_nper", "ocupados_nper",
+                  "Head_edad*Head_edad","Head_Mujer*Head_edad", "Head_Afiliado_SS*Head_edad")
+
+fitControl<- trainControl(method = "cv",
+                          number = 5,
+                          classProbs = TRUE,
+                          savePredictions = "final")
+
+grid_xgboost <- expand.grid(nrounds = 500,
+                            max_depth = 6, 
+                            eta = 0.05, 
+                            gamma = 0, 
+                            min_child_weight = 20,
+                            colsample_bytree = 0.66,
+                            subsample = 0.8)
+
+Xgboost_tree_VF <- train(formula(paste0("class ~", paste0(Regresores_VF, collapse = " + "))),
+                         data = Train_3_SMOTE,
+                         method = "xgbTree", 
+                         trControl = fitControl,
+                         tuneGrid = grid_xgboost,  # Especificamos los hiperpar?metros aqu?
+                         metric = "F"
+)
+
+# Prediccion dentro de muestra
+Xgboost_tree_prediccion_DM <- predict(Xgboost_tree_VF, 
+                                      newdata = Train_3_SMOTE)
+# F1-Score 
+f1_score_modelo_xgboost_DM <- F1_Score(y_true = as.factor(Train_3_SMOTE$class), y_pred = as.factor(Xgboost_tree_prediccion_DM), positive = "Yes")
+
+# Prediccion fuera de muestra
+Xgboost_tree_prediccion <- predict(Xgboost_tree_VF, 
+                                   newdata = Test_3)
+# F1-Score 
+f1_score_modelo_xgboost_VF <- F1_Score(y_true = as.factor(Test_3$Pobre), y_pred = as.factor(Xgboost_tree_prediccion), positive = "Yes")
+f1_score_modelo_xgboost_VF
+
+#Prediccion de exportar
+
+Test$DominioBOGOTA <- 0
+
+Prediccion_ult_xgboost <- predict(Xgboost_tree_VF,
+                                newdata = Test)
+
+# Se deja en el formato requerido
+Prediccion_ult_xgboost <- as.data.frame(Prediccion_ult_xgboost) %>% cbind(Test["id"]) %>%
+  mutate(pobre=ifelse(Prediccion_ult_xgboost =="Yes",1,0)) %>% 
+  select(id,pobre)
+
+Nombre <- paste0("Xgboost _nrounds_",500, "_maxdepth_",8,"_eta_",0.02,"_gamma_",0,
+                 "_colsample_bytree_",0.66,"_min_child_weight_",20,"_subsample_",0.8,"_ult_",".csv") 
+setwd("C:/Users/Steven Ramirez/Downloads/Problem-Set-2_Machine-Learning_2024/Problem-Set-2_Machine-Learning_2024/Output/XGboost")
+write.csv(Prediccion_ult_xgboost,Nombre, row.names = FALSE)
+
+
+# EMBEDING ----------------------
+
+# Predicciones de Random Forest en el conjunto de prueba
+rf_predictions <- predict(RF_VF, newdata = Test_3, type = "prob")
+xgb_predictions <- predict(Xgboost_tree_VF, newdata = Test_3, type = "prob")
+
+# Predicciones de clase para ambos modelos
+xgb_class_predictions <- predict(Xgboost_tree_VF, newdata = Test_3, type = "raw")
+rf_class_predictions <- predict(RF_VF, newdata = Test_2, type = "raw")
+
+# Voto mayoritario
+ensemble_class_predictions <- ifelse(xgb_class_predictions == rf_class_predictions, xgb_class_predictions, 
+                                     ifelse(xgb_predictions[,2] > 0.5, "Yes", "No"))
+
+length(Test_3$Clase)
+length(ensemble_class_predictions)
+
+# F1-Score del ensemble
+f1_ensemble <- F1_Score(y_true = Test_3$Pobre, y_pred = ensemble_class_predictions, positive = "Yes")
+
+# Imprimir el F1-Score
+print(f1_ensemble)
 
 #4.1 Diagrama de algunos de los ?rboles ---------------------------------------
 p_load(DiagrammeR)
