@@ -218,27 +218,36 @@ dev.off()
 
 # Estadísticas datos de la base SMOTE -------------------------------------
 
+setwd(paste0(wd,"\\Base"))
+Train_estadisticas <- import(file = "Train_hogares_final.rds") %>% 
+  select(-Li,-Lp,-Fex_c,-Fex_dpto,-Valor_Cuota,-Ln_Cuota,-Ln_Pago_arrien,
+         -Depto, -hacinamiento, -Cabecera)
+
+# Seleccionamos solo columnas que no sean factores
+base_origen <- Train_estadisticas[, sapply(Train_estadisticas, is.numeric) & 
+                         !(grepl("^Head", names(Train_estadisticas)) & names(Train_estadisticas) != "Head_edad")]
+
+
+columnas_numeric <- names(base_origen)
+
+
+
+# En la base SMOTE
 setwd(paste0(wd,"\\Base\\Base_Elastic_Net"))
 Train_3_SMOTE = import(file = "Train_3_SMOTE.rds")
 
-# Filtro de variable
-Regresores_final <- c(colnames(Train_3_SMOTE)[1:26],
-                      colnames(Train_3_SMOTE)[35:43],colnames(Train_3_SMOTE)[69:85],
-                      colnames(Train_3_SMOTE)[168:176])
+base_modelo <- Train_3_SMOTE[, columnas_numeric]
 
-base_modelo <- Train_3_SMOTE[, Regresores_final]
 
 # Renombramos las variable
-base_modelo <- base_modelo %>%
+base_origen <- base_origen %>%
   rename(
     `Clase del hogar` = Clase,
     `Número de cuartos` = n_cuartos,
     `Número de cuartos donde se duerme` = n_cuartos_duermen,
     `Número de personas en el hogar` = Nper,
     `Número de personas en la unidad de gasto` = Npersug,
-    `Departamento` = Depto,
     `Personas por dormitorio` = per_dor,
-    `Hacinamiento` = hacinamiento,
     `Número de mujeres` = nmujeres,
     `Número de menores de 6 años` = nmenores_6,
     `Número de adultos` = adultos,
@@ -250,56 +259,40 @@ base_modelo <- base_modelo %>%
     `Número de incapacitados` = nincapacitados,
     `Número de subsidios` = nsubsidios,
     `Régimen subsidiado` = rsubsidiado,
-    `Jefe de hogar mujer` = Head_Mujer,
-    `Jefe de hogar ocupado` = Head_ocupado,
     `Edad del jefe de hogar` = Head_edad,
-    `Jefe afiliado a seguridad social` = Head_Afiliado_SS,
-    `Jefe de hogar con régimen subsidiado de salud` = Head_Reg_subs_salud,
-    `Jefe de hogar cotiza pensión` = Head_Cot_pension,
-    `Experiencia en último trabajo del jefe` = Head_exper_ult_trab,
-    `Subsidio de alimentación` = Head_sub_alim,
-    `Subsidio de transporte` = Head_sub_transp,
-    `Subsidio familiar` = Head_sub_famil,
-    `Subsidio educativo` = Head_sub_educ,
-    `Recibe subsidio del país` = Head_Rec_subsidio_pais,
-    `Nivel de formalidad del jefe` = Head_Nivel_formalidad,
-    `Segundo trabajo del jefe` = Head_Segundo_trabajo,
-    `Zona cabecera` = Cabecera,
-    `Pago de arriendo` = Pago_Arriendo,
-    `Vivienda propia` = tipo_vivienda2,
-    `Vivienda arriendo` = tipo_vivienda3,
-    `Vivienda en usufructo` = tipo_vivienda4,
-    `Posesion sin titulo` = tipo_vivienda5,
-    `Otro tipo de vivienda` = tipo_vivienda6,
-    `Maximo nivel educativo(Ninguno)` = maxEducLevelNinguno,
-    `Maximo nivel educativo(preescolar)` = maxEducLevelPreescolar,
-    `Maximo nivel educativo(primaria)` = maxEducLevelPrimaria,
-    `Maximo nivel educativo(secundaria)` = maxEducLevelSecundaria,
-    `Maximo nivel educativo(media)` = maxEducLevelMedia,
-    `Maximo nivel educativo(universidad)` = maxEducLevelUniversitaria,
-    `Jefe no tiene educacion` = Head_EducLevelNinguno,
-    `Jefe tiene preescolar` = Head_EducLevelPreescolar,
-    `Jefe tiene primaria` = Head_EducLevelPrimaria,
-    `Jefe tiene secundaria` = Head_EducLevelSecundaria,
-    `Jefe tiene educación media` = Head_EducLevelMedia,
-    `Jefe tiene educación universitaria` = Head_EducLevelUniversitaria,
-    `Jefe es empleado privado` = Head_Ocupacion1,
-    `Jefe es empleado público` = Head_Ocupacion2,
-    `Jefe es empleado doméstico` = Head_Ocupacion3,
-    `Jefe es trabajador por cuenta propia` = Head_Ocupacion4,
-    `Jefe es empleador` = Head_Ocupacion5,
-    `Jefe trabaja familiarmente sin remuneración` = Head_Ocupacion6,
-    `Jefe trabaja en empresa sin remuneración` = Head_Ocupacion7,
-    `Jefe es jornalero` = Head_Ocupacion8,
-    `Jefe trabaja en otra ocupación` = Head_Ocupacion9,
+    `Pago de arriendo` = Pago_Arriendo
+  )
+
+
+base_modelo <- base_modelo %>%
+  rename(
+    `Clase del hogar` = Clase,
+    `Número de cuartos` = n_cuartos,
+    `Número de cuartos donde se duerme` = n_cuartos_duermen,
+    `Número de personas en el hogar` = Nper,
+    `Número de personas en la unidad de gasto` = Npersug,
+    `Personas por dormitorio` = per_dor,
+    `Número de mujeres` = nmujeres,
+    `Número de menores de 6 años` = nmenores_6,
+    `Número de adultos` = adultos,
+    `Número de menores trabajando` = ntrabajo_menores,
+    `Número de ocupados` = nocupados,
+    `Número de desempleados` = ndesempleados,
+    `Número de inactivos` = ninac,
+    `Número de personas en edad de trabajar` = npet,
+    `Número de incapacitados` = nincapacitados,
+    `Número de subsidios` = nsubsidios,
+    `Régimen subsidiado` = rsubsidiado,
+    `Edad del jefe de hogar` = Head_edad,
+    `Pago de arriendo` = Pago_Arriendo
   )
 
 
 setwd(paste0(wd,"\\Base"))
 #Tabla de estadisticas
-stargazer(base_modelo, type = "text", title = "Estadisticas basicas de las variables en el modelo")
-# Genera el código LaTeX con los nombres modificados
-#stargazer(base_modelo, type = "latex", title = "Estadisticas basicas de las variables en el modelo", out = "estadisticas basicas.tex")
+stargazer(base_origen, type = "text", title = "Estadisticas basicas de las variables en la base original")
+stargazer(base_modelo, type = "text", title = "Estadisticas basicas de las variables en la base modelo")
 
+# Genera el código LaTeX con los nombres modificados
 
 
