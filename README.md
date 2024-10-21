@@ -18,4 +18,5 @@ Respecto a las carpetas, contienen la siguiente información:
 
 * Gráficas: Aquí se almacenan las visualizaciones que ayudaron en el análisis de la información y permitieron evaluar visualmente los resultados obtenidos durante el taller.
 
-* Output: Esta carpeta contiene los archivos .csv que fueron cargados a la plataforma de Kaggle para el cálculo del F1-Score. Cada archivo se almacena en una carpeta con el nombre del algoritmo que fue utilizado. 
+* Output: Esta carpeta contiene los archivos .csv que fueron cargados a la plataforma de Kaggle para el cálculo del F1-Score. Cada archivo se almacena en una carpeta con el nombre del algoritmo que fue utilizado.
+* Documento: Presenta el documento final en pdf en el que se desarrolló el taller.
