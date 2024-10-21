@@ -212,6 +212,5 @@ ctrl<- trainControl(method = "cv",
   Nombre_2 <- paste0("Lda_F", ".csv") 
   setwd(paste0(wd2,"/Output/LDA"))
   write.csv(Prediccion_lda_f,Nombre_2, row.names = FALSE)
-  view(Prediccion_lda_f)
 
  
